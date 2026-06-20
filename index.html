@@ -81,7 +81,6 @@
             <h2 style="margin-bottom: 10px;">Воридшавӣ / Сабти ном</h2>
             <input type="text" id="username" placeholder="Номи шумо...">
             <input type="tel" id="userphone" placeholder="Рақами телефон (масалан: 9999)">
-            <!-- Майдони нави Пароли махфӣ илова шуд -->
             <input type="password" id="userpass" placeholder="Рамзи махфии шумо...">
             <button class="btn" onclick="login()">Ворид шудан</button>
         </div>
@@ -125,6 +124,8 @@
             <h4 style="margin-bottom: 5px; color: #4a5568;">Таҳрири маълумот</h4>
             <input type="text" id="edit-name" placeholder="Номи нав">
             <input type="tel" id="edit-phone" placeholder="Рақами нав" readonly style="background:#e2e8f0; color:gray;">
+            <!-- Майдони нав барои таҳрири Рамз (Парол) -->
+            <input type="password" id="edit-pass" placeholder="Рамзи (парол)-и нав">
             <label style="font-size: 13px; color: gray; display:block; margin-top:5px;">Расми профил:</label>
             <input type="file" id="edit-avatar-file" accept="image/*" style="margin-bottom: 10px; width: 100%;">
             <button class="btn" onclick="saveProfileChanges()">Ҳифз кардан</button>
@@ -240,7 +241,6 @@
         }
     }
 
-    // Логикаи нави Login бо санҷиши Рамзи махфӣ (Парол)
     function login() {
         let name = document.getElementById('username').value.trim();
         let phone = document.getElementById('userphone').value.trim();
@@ -252,7 +252,6 @@
         database.ref('users/' + phone).once('value', (snapshot) => {
             let serverUser = snapshot.val();
             if(serverUser) {
-                // Агар рақам аллакай сабт шуда бошад, паролро месанҷем
                 if(serverUser.password === pass) {
                     userData = serverUser;
                     localStorage.setItem('chat_user_data', JSON.stringify(userData));
@@ -261,7 +260,6 @@
                     alert("Ин рақами телефон аллакай сабт шудааст ва рамзи воридкардаи шумо нодуруст аст!");
                 }
             } else {
-                // Агар рақам нав бошад, онро бо парол сабти ном мекунем
                 userData = { name: name, phone: phone, password: pass, img: defaultAvatar };
                 database.ref('users/' + phone).set(userData).then(() => {
                     localStorage.setItem('chat_user_data', JSON.stringify(userData));
@@ -301,26 +299,39 @@
             </div>`;
     }
 
+    // Функсияи навшудаи ҳифзи профил (Ном ва Рамз тағйир меёбанд)
     function saveProfileChanges() {
         let newName = document.getElementById('edit-name').value.trim();
+        let newPass = document.getElementById('edit-pass').value.trim();
         let fileInput = document.getElementById('edit-avatar-file');
 
-        if(newName) {
-            userData.name = newName;
-            let saveFinal = () => {
-                localStorage.setItem('chat_user_data', JSON.stringify(userData));
-                database.ref('users/' + userData.phone).set(userData);
+        if(!newName || !newPass) { 
+            alert("Лутфан ном ва рамзро холӣ нагузоред!"); 
+            return; 
+        }
+        if(newPass.length < 4) {
+            alert("Рамзи нав бояд ҳадди ақал аз 4 аломат иборат бошад!");
+            return;
+        }
+
+        userData.name = newName;
+        userData.password = newPass; // Навсозии рамз дар объект
+
+        let saveFinal = () => {
+            localStorage.setItem('chat_user_data', JSON.stringify(userData));
+            database.ref('users/' + userData.phone).set(userData).then(() => {
                 updateProfileUI();
                 toggleProfileForm(false);
-                alert("Профил нав шуд!");
-            }
-            if(fileInput.files && fileInput.files[0]) {
-                compressImage(fileInput.files[0], function(compressedUrl) {
-                    userData.img = compressedUrl;
-                    saveFinal();
-                });
-            } else { saveFinal(); }
+                alert("Маълумоти профил ва рамзи шумо бомуваффақият нав шуданд!");
+            });
         }
+
+        if(fileInput.files && fileInput.files[0]) {
+            compressImage(fileInput.files[0], function(compressedUrl) {
+                userData.img = compressedUrl;
+                saveFinal();
+            });
+        } else { saveFinal(); }
     }
 
     function switchScreen(screenId, element) {
@@ -331,12 +342,13 @@
         if(screenId === 'chat-screen') { renderActiveChats(); }
     }
 
-    // Ислоҳ барои нигоҳ доштани рамз ҳангоми таҳрири профил
+    // Нишон додани рамзи ҳозира дар майдони таҳрир
     function toggleProfileForm(show) {
         let box = document.getElementById('edit-profile-box');
         if(show) {
             document.getElementById('edit-name').value = userData.name;
             document.getElementById('edit-phone').value = userData.phone;
+            document.getElementById('edit-pass').value = userData.password || ""; // Рамзи ҳозираро мегузорад
             box.style.display = 'block';
         } else { box.style.display = 'none'; }
     }
