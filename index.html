@@ -39,6 +39,12 @@
         
         input[type="text"], input[type="tel"], input[type="password"] { width: 100%; padding: 12px 16px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 16px; background: #f8fafc; outline: none; -webkit-appearance: none; }
         input:focus { border-color: #667eea; background: #fff; }
+        
+        /* Стили барои қуттии рамз бо чашмак */
+        .password-container { position: relative; width: 100%; }
+        .password-container input { padding-right: 45px; }
+        .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; color: #718096; outline: none; }
+
         .btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; }
         .btn-secondary { background: #e2e8f0; color: #4a5568; margin-top: 8px; }
         .btn-danger { background: linear-gradient(135deg, #f56565 0%, #c53030 100%); color: white; margin-top: 8px; }
@@ -81,7 +87,10 @@
             <h2 style="margin-bottom: 10px;">Воридшавӣ / Сабти ном</h2>
             <input type="text" id="username" placeholder="Номи шумо...">
             <input type="tel" id="userphone" placeholder="Рақами телефон (масалан: 9999)">
-            <input type="password" id="userpass" placeholder="Рамзи махфии шумо...">
+            <div class="password-container">
+                <input type="password" id="userpass" placeholder="Рамзи махфии шумо...">
+                <button type="button" class="toggle-password" onclick="togglePasswordVisibility('userpass', this)">👁️</button>
+            </div>
             <button class="btn" onclick="login()">Ворид шудан</button>
         </div>
     </div>
@@ -124,8 +133,12 @@
             <h4 style="margin-bottom: 5px; color: #4a5568;">Таҳрири маълумот</h4>
             <input type="text" id="edit-name" placeholder="Номи нав">
             <input type="tel" id="edit-phone" placeholder="Рақами нав" readonly style="background:#e2e8f0; color:gray;">
-            <!-- Майдони нав барои таҳрири Рамз (Парол) -->
-            <input type="password" id="edit-pass" placeholder="Рамзи (парол)-и нав">
+            
+            <div class="password-container">
+                <input type="password" id="edit-pass" placeholder="Рамзи (парол)-и нав">
+                <button type="button" class="toggle-password" onclick="togglePasswordVisibility('edit-pass', this)">👁️</button>
+            </div>
+
             <label style="font-size: 13px; color: gray; display:block; margin-top:5px;">Расми профил:</label>
             <input type="file" id="edit-avatar-file" accept="image/*" style="margin-bottom: 10px; width: 100%;">
             <button class="btn" onclick="saveProfileChanges()">Ҳифз кардан</button>
@@ -200,6 +213,18 @@
         if(savedUser) {
             userData = JSON.parse(savedUser);
             enterApp();
+        }
+    }
+
+    // Функсияи нав барои кор кардани тугмаи Чашм
+    function togglePasswordVisibility(inputId, btn) {
+        let input = document.getElementById(inputId);
+        if (input.type === "password") {
+            input.type = "text";
+            btn.innerText = "🙈"; // Нишонаи пӯшидани чашм
+        } else {
+            input.type = "password";
+            btn.innerText = "👁️"; // Нишонаи кушодани чашм
         }
     }
 
@@ -299,7 +324,6 @@
             </div>`;
     }
 
-    // Функсияи навшудаи ҳифзи профил (Ном ва Рамз тағйир меёбанд)
     function saveProfileChanges() {
         let newName = document.getElementById('edit-name').value.trim();
         let newPass = document.getElementById('edit-pass').value.trim();
@@ -315,7 +339,7 @@
         }
 
         userData.name = newName;
-        userData.password = newPass; // Навсозии рамз дар объект
+        userData.password = newPass;
 
         let saveFinal = () => {
             localStorage.setItem('chat_user_data', JSON.stringify(userData));
@@ -342,13 +366,15 @@
         if(screenId === 'chat-screen') { renderActiveChats(); }
     }
 
-    // Нишон додани рамзи ҳозира дар майдони таҳрир
     function toggleProfileForm(show) {
         let box = document.getElementById('edit-profile-box');
         if(show) {
             document.getElementById('edit-name').value = userData.name;
             document.getElementById('edit-phone').value = userData.phone;
-            document.getElementById('edit-pass').value = userData.password || ""; // Рамзи ҳозираро мегузорад
+            document.getElementById('edit-pass').value = userData.password || "";
+            // Ҳангоми кушодани форма навъи майдонро дубора ба "password" мегардонем
+            document.getElementById('edit-pass').type = "password";
+            box.querySelector('.toggle-password').innerText = "👁️";
             box.style.display = 'block';
         } else { box.style.display = 'none'; }
     }
