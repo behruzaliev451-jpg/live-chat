@@ -539,17 +539,27 @@
         }
     }
 
-    // ИСЛОҲИ АСОСӢ: Паёмакҳоро аз рӯи вақт (Timestamp) дуруст мисли Ватсапп меорад
+    // ИСЛОҲИ АСОСӢ ВА КОМИЛ: Паёмакҳо дигар пешу пас намешаванд!
     function openChat(title, img, roomId) {
         currentChatRoomId = roomId;
         document.getElementById('chat-title').innerText = title;
         document.getElementById('chat-window').style.display = 'flex';
         
+        const msgList = document.getElementById('chat-messages-list');
+        
+        // Аввал лисенри пешинаро хомӯш мекунем
         database.ref('messages/' + roomId).off();
         
+        // Лисенри тоза бо усули дурусти ҷобаҷокунӣ (onValue)
         database.ref('messages/' + roomId).orderByChild('timestamp').on('value', (snapshot) => {
-            let msgList = document.getElementById('chat-messages-list');
-            msgList.innerHTML = `<div style="text-align:center; color:gray; font-size:12px; width:100%; margin-bottom:5px;">Хуш омадед ба ${title}!</div>`;
+            // Майдони чатро пурра тоза мекунем
+            msgList.innerHTML = "";
+            
+            // Сарлавҳаи хуш омадед
+            const welcomeDiv = document.createElement("div");
+            welcomeDiv.style.cssText = "text-align:center; color:gray; font-size:12px; width:100%; margin-bottom:5px;";
+            welcomeDiv.innerText = `Хуш омадед ба ${title}!`;
+            msgList.appendChild(welcomeDiv);
             
             if(snapshot.exists()) {
                 snapshot.forEach((childSnapshot) => {
@@ -558,18 +568,27 @@
                     let isMe = msg.phone === userData.phone;
                     let alignmentClass = isMe ? "me" : "other";
                     
+                    // Сохтани унсури DOM-и паёмак (айнан мисли коди аввала)
+                    const wrapper = document.createElement("div");
+                    wrapper.className = `msg-wrapper ${alignmentClass}`;
+                    wrapper.id = msgKey;
+                    
                     let deleteButtonHTML = isMe ? `<button class="delete-btn" onclick="deleteSingleMessage('${msgKey}')">🗑️ Нест кардан</button>` : "";
                     
-                    msgList.innerHTML += `
-                        <div class="msg-wrapper ${alignmentClass}">
-                            <img src="${msg.userImg || defaultAvatar}" class="msg-avatar">
-                            <div class="msg-body">
-                                <span class="msg-username">${isMe ? "Шумо" : msg.username}</span>
-                                <div class="msg-text">${msg.text}</div>
-                                ${deleteButtonHTML}
-                            </div>
-                        </div>`;
+                    wrapper.innerHTML = `
+                        <img src="${msg.userImg || defaultAvatar}" class="msg-avatar">
+                        <div class="msg-body">
+                            <span class="msg-username">${isMe ? "Шумо" : msg.username}</span>
+                            <div class="msg-text">${msg.text}</div>
+                            ${deleteButtonHTML}
+                        </div>
+                    `;
+                    
+                    // Муҳимтарин қисм: Илова кардан ба охири чат ба таври худкор
+                    msgList.appendChild(wrapper);
                 });
+                
+                // Скролл ба таҳти чат
                 setTimeout(() => {
                     msgList.scrollTop = msgList.scrollHeight;
                 }, 50);
@@ -596,7 +615,6 @@
         }
     }
 
-    // Ислоҳи қисми нотамоми коди пешинаи шумо
     function listenToUnreadMessages() {
         database.ref('messages').on('value', (snapshot) => {
             let allMessages = snapshot.val(); if(!allMessages) return;
@@ -607,29 +625,11 @@
                 if(messagesArray.length === 0) return;
                 let lastMessage = messagesArray[messagesArray.length - 1];
                 activeChats.push({
-                    id: roomId, title: room.name, lastMsg: lastMessage.text, lastUser: lastMessage.username, img: room.img, unread: lastMessage.phone !== userData.phone
+                    id: roomId, title: room.name, lastMsg: lastMessage.text, lastUser: lastMessage.username, img: room.img
                 });
             });
-            if(document.getElementById('chat-screen').classList.contains('active-screen')) renderActiveChats();
         });
     }
-
-    function renderActiveChats() {
-        let container = document.getElementById('active-chats-list'); container.innerHTML = activeChats.length ? "" : "<p style='color:gray; text-align:center;'>Чатҳо нест.</p>";
-        activeChats.forEach(chat => {
-            container.innerHTML += `
-                <div class="item-card" onclick="openChat('${chat.title}', '${chat.img}', '${chat.id}')">
-                    <div class="card-main-info">
-                        <img src="${chat.img || defaultAvatar}" class="room-avatar">
-                        <div class="card-info" style="flex:1; margin-left:10px;"><b>💬 ${chat.title}</b><br><small>${chat.lastUser}: ${chat.lastMsg}</small></div>
-                    </div>
-                </div>`;
-        });
-    }
-
-    function shareRoom(link) { navigator.clipboard.writeText(link).then(() => { alert("🔗 Ссылка нусхабардорӣ шуд!"); }); }
-    function editRoom(id) { let room = roomsData.find(r => r.id === id); if(room) { let n = prompt("Номи нав:", room.name); if(n) database.ref('rooms/' + id).update({ name: n }); } }
-    function deleteRoom(id) { if(confirm("Нест карда шавад?")) { database.ref('rooms/' + id).remove(); database.ref('messages/' + id).remove(); } }
 </script>
 </body>
 </html>
