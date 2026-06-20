@@ -32,7 +32,6 @@
         .msg-wrapper.me .msg-text { background: #667eea; color: white; border-top-right-radius: 2px; border-bottom-right-radius: 14px; }
         .msg-wrapper.other .msg-text { background: white; color: #333; border-top-left-radius: 2px; border-bottom-left-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         
-        /* Стили барои тугмаи несткунӣ */
         .delete-btn { background: none; border: none; color: #ff3b30; font-size: 11px; cursor: pointer; margin-top: 2px; padding: 0 5px; opacity: 0.7; }
         .delete-btn:hover { opacity: 1; text-decoration: underline; }
 
@@ -166,15 +165,15 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
 <script>
-    // БАЗАИ НАВИ ШУМО ИНҶО ПАЙВАСТ ШУД:
+    // БАЗАИ НАВИ ХУДИ ШУМО КИ 100% КУШОДА АСТ:
     const firebaseConfig = {
-        apiKey: "AIzaSy...",
+        apiKey: "AIzaSyDPIaHuOYaee3O4hsbsuUTdMPsDlRel3yk",
         authDomain: "my-live-chat-ca902.firebaseapp.com",
         databaseURL: "https://my-live-chat-ca902-default-rtdb.firebaseio.com",
         projectId: "my-live-chat-ca902",
         storageBucket: "my-live-chat-ca902.firebasestorage.app",
         messagingSenderId: "396836014742",
-        appId: "1:396836014742:web:..."
+        appId: "1:396836014742:web:1ecde09db17cc43f8dd90c"
     };
     
     firebase.initializeApp(firebaseConfig);
@@ -273,6 +272,7 @@
         loadRoomsFromServer();
     }
 
+    // ФУНКСИЯИ БАРОМАДАН АЗ ПРОФИЛ
     function logout() {
         if(confirm("Оё мехоҳед аз барнома бароед?")) {
             localStorage.removeItem('chat_user_data');
@@ -282,14 +282,34 @@
         }
     }
 
+    // ФУНКСИЯИ НЕСТ КАРДАНИ ПРОФИЛ АЗ БАЗА ВА ХОТИРА
+    function deleteAccount() {
+        if(confirm("⚠️ ОЁ ШУМО БОВАРИ ДОРЕД? Профили шумо ва ҳамаи маълумотҳоятон аз база ПУРРА нест карда мешаванд!")) {
+            let phone = userData.phone;
+            database.ref('users/' + phone).remove().then(() => {
+                localStorage.removeItem('chat_user_data');
+                document.getElementById('username').value = "";
+                document.getElementById('userphone').value = "";
+                document.getElementById('auth-screen').style.display = 'flex';
+                alert("Профили шумо бо муваффақият нест карда шуд!");
+            }).catch((error) => {
+                alert("Хатогӣ ҳангоми нест кардан: " + error.message);
+            });
+        }
+    }
+
+    // НАМОИШИ ПРОФИЛ БО ТУГМАИ НАВИ НЕСТКУНӢ
     function updateProfileUI() {
         document.getElementById('my-profile-info').innerHTML = `
             <img src="${userData.img || defaultAvatar}" class="profile-avatar-big">
             <div style="flex: 1; font-size: 15px; color: #2d3748;">
                 <b>Ном:</b> <span>${userData.name}</span><br>
                 <span style="margin-top: 3px; display:inline-block;"><b>Рақам:</b> <span>${userData.phone}</span></span><br>
-                <button class="btn btn-secondary btn-sm" onclick="toggleProfileForm(true)">✏️ Таҳрир</button>
-                <button class="btn btn-danger btn-sm" onclick="logout()" style="margin-left: 5px;">🚪 Баромадан</button>
+                <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px;">
+                    <button class="btn btn-secondary btn-sm" onclick="toggleProfileForm(true)">✏️ Таҳрир</button>
+                    <button class="btn btn-danger btn-sm" onclick="logout()">🚪 Баромадан</button>
+                    <button class="btn btn-sm" onclick="deleteAccount()" style="background: #e53e3e; color: white;">❌ Нест кардани профил</button>
+                </div>
             </div>`;
     }
 
@@ -512,7 +532,7 @@
                     let isMe = msg.phone === userData.phone;
                     let alignmentClass = isMe ? "me" : "other";
                     
-                    // Илова кардани тугмаи несткунӣ барои паёмҳои худи корбар
+                    // ТУГМАИ 🗑️ НЕСТ КАРДАН БАРОИ ПАЁМҲОИ ХУДИ КОРБАР
                     let deleteButtonHTML = isMe ? `<button class="delete-btn" onclick="deleteSingleMessage('${msgKey}')">🗑️ Нест кардан</button>` : "";
                     
                     msgList.innerHTML += `
@@ -545,7 +565,7 @@
         }
     }
 
-    // Функсияи нест кардани паёми интихобшуда
+    // ФУНКСИЯИ НЕСТ КАРДАНИ ЯК ПАЁМ
     function deleteSingleMessage(msgKey) {
         if(confirm("Оё мехоҳед ин паёмро нест кунед?")) {
             database.ref('messages/' + currentChatRoomId + '/' + msgKey).remove();
