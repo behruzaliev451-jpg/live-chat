@@ -40,6 +40,7 @@
         input[type="text"], input[type="tel"], input[type="password"] { width: 100%; padding: 12px 16px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 16px; background: #f8fafc; outline: none; -webkit-appearance: none; }
         input:focus { border-color: #667eea; background: #fff; }
         
+        /* Стили барои қуттии рамз бо чашмак */
         .password-container { position: relative; width: 100%; }
         .password-container input { padding-right: 45px; }
         .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; color: #718096; outline: none; }
@@ -215,14 +216,15 @@
         }
     }
 
+    // Функсияи нав барои кор кардани тугмаи Чашм
     function togglePasswordVisibility(inputId, btn) {
         let input = document.getElementById(inputId);
         if (input.type === "password") {
             input.type = "text";
-            btn.innerText = "🙈";
+            btn.innerText = "🙈"; // Нишонаи пӯшидани чашм
         } else {
             input.type = "password";
-            btn.innerText = "👁️";
+            btn.innerText = "👁️"; // Нишонаи кушодани чашм
         }
     }
 
@@ -280,7 +282,7 @@
                     localStorage.setItem('chat_user_data', JSON.stringify(userData));
                     enterApp();
                 } else {
-                    alert("Ин рақами telephone аллакай сабт шудааст ва рамзи воридкардаи шумо нодуруст аст!");
+                    alert("Ин рақами телефон аллакай сабт шудааст ва рамзи воридкардаи шумо нодуруст аст!");
                 }
             } else {
                 userData = { name: name, phone: phone, password: pass, img: defaultAvatar };
@@ -370,6 +372,7 @@
             document.getElementById('edit-name').value = userData.name;
             document.getElementById('edit-phone').value = userData.phone;
             document.getElementById('edit-pass').value = userData.password || "";
+            // Ҳангоми кушодани форма навъи майдонро дубора ба "password" мегардонем
             document.getElementById('edit-pass').type = "password";
             box.querySelector('.toggle-password').innerText = "👁️";
             box.style.display = 'block';
@@ -539,56 +542,35 @@
         }
     }
 
-    // ИСЛОҲИ АСОСӢ ВА КОМИЛ: Паёмакҳо дигар пешу пас намешаванд!
     function openChat(title, img, roomId) {
         currentChatRoomId = roomId;
         document.getElementById('chat-title').innerText = title;
         document.getElementById('chat-window').style.display = 'flex';
         
-        const msgList = document.getElementById('chat-messages-list');
-        
-        // Аввал лисенри пешинаро хомӯш мекунем
         database.ref('messages/' + roomId).off();
-        
-        // Лисенри тоза бо усули дурусти ҷобаҷокунӣ (onValue)
-        database.ref('messages/' + roomId).orderByChild('timestamp').on('value', (snapshot) => {
-            // Майдони чатро пурра тоза мекунем
-            msgList.innerHTML = "";
+        database.ref('messages/' + roomId).on('value', (snapshot) => {
+            let messages = snapshot.val();
+            let msgList = document.getElementById('chat-messages-list');
+            msgList.innerHTML = `<div style="text-align:center; color:gray; font-size:12px; width:100%; margin-bottom:5px;">Хуш омадед ба ${title}!</div>`;
             
-            // Сарлавҳаи хуш омадед
-            const welcomeDiv = document.createElement("div");
-            welcomeDiv.style.cssText = "text-align:center; color:gray; font-size:12px; width:100%; margin-bottom:5px;";
-            welcomeDiv.innerText = `Хуш омадед ба ${title}!`;
-            msgList.appendChild(welcomeDiv);
-            
-            if(snapshot.exists()) {
-                snapshot.forEach((childSnapshot) => {
-                    let msg = childSnapshot.val();
-                    let msgKey = childSnapshot.key;
+            if(messages) {
+                Object.keys(messages).forEach(msgKey => {
+                    let msg = messages[msgKey];
                     let isMe = msg.phone === userData.phone;
                     let alignmentClass = isMe ? "me" : "other";
                     
-                    // Сохтани унсури DOM-и паёмак (айнан мисли коди аввала)
-                    const wrapper = document.createElement("div");
-                    wrapper.className = `msg-wrapper ${alignmentClass}`;
-                    wrapper.id = msgKey;
-                    
                     let deleteButtonHTML = isMe ? `<button class="delete-btn" onclick="deleteSingleMessage('${msgKey}')">🗑️ Нест кардан</button>` : "";
                     
-                    wrapper.innerHTML = `
-                        <img src="${msg.userImg || defaultAvatar}" class="msg-avatar">
-                        <div class="msg-body">
-                            <span class="msg-username">${isMe ? "Шумо" : msg.username}</span>
-                            <div class="msg-text">${msg.text}</div>
-                            ${deleteButtonHTML}
-                        </div>
-                    `;
-                    
-                    // Муҳимтарин қисм: Илова кардан ба охири чат ба таври худкор
-                    msgList.appendChild(wrapper);
+                    msgList.innerHTML += `
+                        <div class="msg-wrapper ${alignmentClass}">
+                            <img src="${msg.userImg || defaultAvatar}" class="msg-avatar">
+                            <div class="msg-body">
+                                <span class="msg-username">${isMe ? "Шумо" : msg.username}</span>
+                                <div class="msg-text">${msg.text}</div>
+                                ${deleteButtonHTML}
+                            </div>
+                        </div>`;
                 });
-                
-                // Скролл ба таҳти чат
                 setTimeout(() => {
                     msgList.scrollTop = msgList.scrollHeight;
                 }, 50);
@@ -625,11 +607,29 @@
                 if(messagesArray.length === 0) return;
                 let lastMessage = messagesArray[messagesArray.length - 1];
                 activeChats.push({
-                    id: roomId, title: room.name, lastMsg: lastMessage.text, lastUser: lastMessage.username, img: room.img
+                    id: roomId, title: room.name, lastMsg: lastMessage.text, lastUser: lastMessage.username, img: room.img, unread: lastMessage.phone !== userData.phone
                 });
             });
+            if(document.getElementById('chat-screen').classList.contains('active-screen')) renderActiveChats();
         });
     }
+
+    function renderActiveChats() {
+        let container = document.getElementById('active-chats-list'); container.innerHTML = activeChats.length ? "" : "<p style='color:gray; text-align:center;'>Чатҳо нест.</p>";
+        activeChats.forEach(chat => {
+            container.innerHTML += `
+                <div class="item-card" onclick="openChat('${chat.title}', '${chat.img}', '${chat.id}')">
+                    <div class="card-main-info">
+                        <img src="${chat.img || defaultAvatar}" class="room-avatar">
+                        <div class="card-info" style="flex:1; margin-left:10px;"><b>💬 ${chat.title}</b><br><small>${chat.lastUser}: ${chat.lastMsg}</small></div>
+                    </div>
+                </div>`;
+        });
+    }
+
+    function shareRoom(link) { navigator.clipboard.writeText(link).then(() => { alert("🔗 Ссылка нусхабардорӣ шуд!"); }); }
+    function editRoom(id) { let room = roomsData.find(r => r.id === id); if(room) { let n = prompt("Номи нав:", room.name); if(n) database.ref('rooms/' + id).update({ name: n }); } }
+    function deleteRoom(id) { if(confirm("Нест карда шавад?")) { database.ref('rooms/' + id).remove(); database.ref('messages/' + id).remove(); } }
 </script>
 </body>
 </html>
