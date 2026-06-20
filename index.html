@@ -32,7 +32,6 @@
         .msg-wrapper.me .msg-text { background: #667eea; color: white; border-top-right-radius: 2px; border-bottom-right-radius: 14px; }
         .msg-wrapper.other .msg-text { background: white; color: #333; border-top-left-radius: 2px; border-bottom-left-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         
-        /* Стили барои тугмаи несткунӣ */
         .delete-btn { background: none; border: none; color: #ff3b30; font-size: 11px; cursor: pointer; margin-top: 2px; padding: 0 5px; opacity: 0.7; }
         .delete-btn:hover { opacity: 1; text-decoration: underline; }
 
@@ -82,6 +81,8 @@
             <h2 style="margin-bottom: 10px;">Воридшавӣ / Сабти ном</h2>
             <input type="text" id="username" placeholder="Номи шумо...">
             <input type="tel" id="userphone" placeholder="Рақами телефон (масалан: 9999)">
+            <!-- Майдони нави Пароли махфӣ илова шуд -->
+            <input type="password" id="userpass" placeholder="Рамзи махфии шумо...">
             <button class="btn" onclick="login()">Ворид шудан</button>
         </div>
     </div>
@@ -166,7 +167,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
 <script>
-    // БАЗАИ НАВИ ШУМО ИНҶО ПАЙВАСТ ШУД:
     const firebaseConfig = {
         apiKey: "AIzaSy...",
         authDomain: "my-live-chat-ca902.firebaseapp.com",
@@ -186,7 +186,7 @@
     let filterByCreatorPhone = "";
     const defaultAvatar = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
     
-    let userData = { name: "", phone: "", img: defaultAvatar };
+    let userData = { name: "", phone: "", password: "", img: defaultAvatar };
 
     window.onload = function() {
         document.getElementById('message-input').addEventListener('keypress', function(e) {
@@ -240,27 +240,34 @@
         }
     }
 
+    // Логикаи нави Login бо санҷиши Рамзи махфӣ (Парол)
     function login() {
         let name = document.getElementById('username').value.trim();
         let phone = document.getElementById('userphone').value.trim();
+        let pass = document.getElementById('userpass').value.trim();
         
-        if(!name || !phone) { alert("Лутфан ном ва рақамро нависед!"); return; }
+        if(!name || !phone || !pass) { alert("Лутфан ном, рақам ва рамзи махфиро нависед!"); return; }
+        if(pass.length < 4) { alert("Рамз бояд ҳадди ақал аз 4 аломат иборат бошад!"); return; }
 
         database.ref('users/' + phone).once('value', (snapshot) => {
             let serverUser = snapshot.val();
             if(serverUser) {
-                if(serverUser.name.toLowerCase() === name.toLowerCase()) {
+                // Агар рақам аллакай сабт шуда бошад, паролро месанҷем
+                if(serverUser.password === pass) {
                     userData = serverUser;
+                    localStorage.setItem('chat_user_data', JSON.stringify(userData));
+                    enterApp();
                 } else {
-                    userData = { name: name, phone: phone, img: defaultAvatar };
-                    database.ref('users/' + phone).set(userData);
+                    alert("Ин рақами телефон аллакай сабт шудааст ва рамзи воридкардаи шумо нодуруст аст!");
                 }
             } else {
-                userData = { name: name, phone: phone, img: defaultAvatar };
-                database.ref('users/' + phone).set(userData);
+                // Агар рақам нав бошад, онро бо парол сабти ном мекунем
+                userData = { name: name, phone: phone, password: pass, img: defaultAvatar };
+                database.ref('users/' + phone).set(userData).then(() => {
+                    localStorage.setItem('chat_user_data', JSON.stringify(userData));
+                    enterApp();
+                });
             }
-            localStorage.setItem('chat_user_data', JSON.stringify(userData));
-            enterApp();
         });
     }
 
@@ -278,6 +285,7 @@
             localStorage.removeItem('chat_user_data');
             document.getElementById('username').value = "";
             document.getElementById('userphone').value = "";
+            document.getElementById('userpass').value = "";
             document.getElementById('auth-screen').style.display = 'flex';
         }
     }
@@ -323,6 +331,7 @@
         if(screenId === 'chat-screen') { renderActiveChats(); }
     }
 
+    // Ислоҳ барои нигоҳ доштани рамз ҳангоми таҳрири профил
     function toggleProfileForm(show) {
         let box = document.getElementById('edit-profile-box');
         if(show) {
@@ -512,7 +521,6 @@
                     let isMe = msg.phone === userData.phone;
                     let alignmentClass = isMe ? "me" : "other";
                     
-                    // Илова кардани тугмаи несткунӣ барои паёмҳои худи корбар
                     let deleteButtonHTML = isMe ? `<button class="delete-btn" onclick="deleteSingleMessage('${msgKey}')">🗑️ Нест кардан</button>` : "";
                     
                     msgList.innerHTML += `
@@ -545,7 +553,6 @@
         }
     }
 
-    // Функсияи нест кардани паёми интихобшуда
     function deleteSingleMessage(msgKey) {
         if(confirm("Оё мехоҳед ин паёмро нест кунед?")) {
             database.ref('messages/' + currentChatRoomId + '/' + msgKey).remove();
