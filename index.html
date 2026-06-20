@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Барномаи Чат</title>
+    <title>Barsnomai Chat</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: #f5f7fb; display: flex; justify-content: center; align-items: center; height: 100vh; height: 100dvh; overflow: hidden; }
@@ -20,7 +20,6 @@
         .back-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
         .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
         
-        /* СТИЛҲОИ НАВШУДА БАРОИ ПАЁМАКҲО */
         .msg-wrapper { display: flex; gap: 10px; width: 100%; max-width: 85%; margin-bottom: 2px; }
         .msg-wrapper.me { align-self: flex-end; flex-direction: row-reverse; }
         .msg-wrapper.other { align-self: flex-start; }
@@ -185,10 +184,30 @@
     let userData = { name: "", phone: "", img: defaultAvatar };
 
     window.onload = function() {
+        // Илова кардани функсияи фиристодан бо Enter
+        document.getElementById('message-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
         let savedUser = localStorage.getItem('chat_user_data');
         if(savedUser) {
             userData = JSON.parse(savedUser);
             enterApp();
+        }
+    }
+
+    function checkDeepLink() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomId = urlParams.get('room');
+        if (roomId) {
+            // Тоза кардани параметр аз URL барои зебоӣ
+            window.history.replaceState({}, document.title, window.location.pathname);
+            // Кӯшиши ворид шудан ба комната пас аз 1 сония (то бор шудани база)
+            setTimeout(() => {
+                tryEnterRoom(roomId);
+            }, 1000);
         }
     }
 
@@ -328,6 +347,8 @@
                 });
             }
             renderRoomsUI();
+            // Санҷиши пайванд пас аз бор шудани комнатаҳо
+            checkDeepLink();
         });
     }
 
@@ -388,7 +409,7 @@
         if(/^\d+$/.test(input)) {
             database.ref('users/' + input).once('value', (snapshot) => {
                 let searchedUser = snapshot.val();
-                if(searchedUser) {
+                if(snapshot.exists()) {
                     userResultBox.innerHTML = `
                         <div class="searched-user-box" onclick="filterRoomsByUser('${searchedUser.phone}', '${searchedUser.name}')">
                             <img src="${searchedUser.img || defaultAvatar}" class="room-avatar">
@@ -433,7 +454,7 @@
 
         if(name) {
             let roomId = "room_" + Date.now();
-            let generateLink = "https://behruzirahmidinzoda-max.github.io/toj-chat/?room=" + roomId;
+            let generateLink = window.location.origin + window.location.pathname + "?room=" + roomId;
 
             let saveToFirebase = (url) => {
                 database.ref('rooms/' + roomId).set({
@@ -468,10 +489,11 @@
                 if(userPass === room.pass) { openChat(room.name, room.img, room.id); } 
                 else if(userPass !== null) { alert("Рамз нодуруст аст!"); }
             } else { openChat(room.name, room.img, room.id); }
+        } else {
+            alert("Комната ёфт нашуд ё нест карда шудааст!");
         }
     }
 
-    /* ФУНКСИЯИ НАВШУДАИ НАМОИШИ ЧАТ */
     function openChat(title, img, roomId) {
         currentChatRoomId = roomId;
         document.getElementById('chat-title').innerText = title;
