@@ -61,28 +61,25 @@
 
         .item-card { background: white; padding: 14px; margin-bottom: 12px; border-radius: 14px; border-left: 5px solid #667eea; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 10px; cursor: pointer; position: relative; }
         
-        /* Скроли уфуқӣ барои бахши сохтаи ман */
         .horizontal-scroll-container { display: flex; gap: 12px; overflow-x: auto; padding: 5px 2px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
         .horizontal-scroll-container::-webkit-scrollbar { display: none; }
         .horizontal-scroll-container .item-card { flex: 0 0 260px; margin-bottom: 0; }
 
-        .card-main-info { display: flex; align-items: center; width: 100%; justify-content: space-between; position: relative; }
-        .card-info { display: flex; flex-direction: column; gap: 3px; max-width: 55%; }
+        .card-main-info { display: flex; align-items: center; width: 100%; justify-content: space-between; position: relative; padding-right: 25px; }
+        .card-info { display: flex; flex-direction: column; gap: 3px; max-width: 70%; }
         .room-avatar { width: 45px; height: 45px; border-radius: 50%; background: #e2e8f0; object-fit: cover; }
         .profile-avatar-big { width: 65px; height: 65px; border-radius: 50%; background: #e2e8f0; object-fit: cover; }
-        .lock-icon { font-size: 16px; margin-left: auto; margin-right: 8px; }
-
-        .card-more-btn { background: none; border: none; font-size: 20px; color: #a0aec0; cursor: pointer; padding: 0 8px; outline: none; position: relative; z-index: 10; }
-        .card-context-menu { position: absolute; right: 10px; top: 40px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 8px; display: none; flex-direction: column; z-index: 95; min-width: 180px; border: 1px solid #edf2f7; overflow: hidden; }
-        .card-context-menu button { padding: 10px 12px; font-size: 13px; color: #333; background: none; border: none; text-align: left; cursor: pointer; width: 100%; font-weight: 500; }
-        .card-context-menu button.menu-del-btn { color: #ff3b30; }
-        .card-context-menu button:hover { background: #f8fafc; }
+        
+        /* Нишонаи сабадча дар кунҷи болоии рост */
+        .top-delete-trash { position: absolute; top: -2px; right: -2px; background: none; border: none; font-size: 18px; cursor: pointer; color: #ff3b30; padding: 4px; z-index: 15; outline: none; transition: transform 0.1s; }
+        .top-delete-trash:active { transform: scale(1.2); }
+        .lock-icon { font-size: 15px; margin-left: auto; margin-right: 5px; }
 
         .room-actions { display: flex; gap: 6px; width: 100%; margin-top: 5px; }
         .action-btn { flex: 1; padding: 8px 4px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; }
         .btn-enter { background: #e0e7ff; color: #4f46e5; }
         .btn-edit { background: #fef3c7; color: #d97706; }
-        .btn-delete { background: #fee2e2; color: #dc2626; }
+        .btn-clear { background: #fee2e2; color: #dc2626; }
 
         .bottom-nav { height: calc(65px + env(safe-area-inset-bottom)); border-top: 1px solid #edf2f7; display: flex; justify-content: space-around; align-items: center; background: #ffffff; flex-shrink: 0; width: 100%; padding-bottom: env(safe-area-inset-bottom); }
         .nav-item { border: none; background: none; font-size: 11px; color: #a0aec0; display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; cursor: pointer; height: 100%; justify-content: center; }
@@ -169,6 +166,7 @@
             <button class="btn btn-secondary" onclick="toggleProfileForm(false)">Баргаштан</button>
         </div>
 
+        <!-- Равзанаи Таҳрири Комната -->
         <div class="create-room-box" id="edit-room-box" style="display:none;">
             <h4 style="margin-bottom: 5px; color: #d97706;">✏️ Таҳрири Комната</h4>
             <input type="hidden" id="edit-room-id">
@@ -183,6 +181,7 @@
             <button class="btn btn-secondary" onclick="document.getElementById('edit-room-box').style.display='none'">Баргаштан</button>
         </div>
 
+        <!-- Равзанаи Таҳрири Гурӯҳ -->
         <div class="create-room-box" id="edit-group-box" style="display:none;">
             <h4 style="margin-bottom: 5px; color: #11998e;">✏️ Таҳрири Гурӯҳ</h4>
             <input type="hidden" id="edit-group-id">
@@ -291,11 +290,6 @@
                 sendMessage();
             }
         });
-
-        document.addEventListener('click', function() {
-            document.querySelectorAll('.card-context-menu').forEach(m => m.style.display = 'none');
-        });
-
         let savedUser = localStorage.getItem('chat_user_data');
         if(savedUser) {
             userData = JSON.parse(savedUser);
@@ -316,18 +310,6 @@
         } else {
             input.type = "password";
             btn.innerText = "👁️";
-        }
-    }
-
-    function toggleCardMenu(event, id) {
-        event.stopPropagation();
-        let targetMenuId = 'menu-' + id;
-        document.querySelectorAll('.card-context-menu').forEach(m => {
-            if(m.id !== targetMenuId) m.style.display = 'none';
-        });
-        let menu = document.getElementById(targetMenuId);
-        if(menu) {
-            menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
         }
     }
 
@@ -491,7 +473,6 @@
         if(fileInput.files && fileInput.files[0]) compressImage(fileInput.files[0], save); else save("");
     }
 
-    /* ФУНКСИЯҲОИ НАВИ ТАҲРИР ВА НЕСТ КАРДАН */
     function openEditRoom(id, event) {
         if(event) event.stopPropagation();
         let room = roomsData.find(r => r.id === id);
@@ -510,7 +491,6 @@
         let pass = document.getElementById('edit-room-pass').value.trim();
         let fileInput = document.getElementById('edit-room-icon');
         if(!name) { alert("Номро холӣ нагузоред!"); return; }
-
         let currentRoom = roomsData.find(r => r.id === id);
 
         let save = (imgUrl) => {
@@ -552,7 +532,6 @@
         let pass = document.getElementById('edit-group-pass').value.trim();
         let fileInput = document.getElementById('edit-group-icon');
         if(!name) { alert("Номро холӣ нагузоред!"); return; }
-
         let currentGroup = groupsData.find(g => g.id === id);
 
         let save = (imgUrl) => {
@@ -576,6 +555,16 @@
         }
     }
 
+    /* ФУНКСИЯИ ПОК КАРДАНИ ЧАТ БАРОИ ХУДИ УЗВ */
+    function clearLocalChat(id, event) {
+        if(event) event.stopPropagation();
+        if(confirm("Оё мехоҳед таърихи паёмҳои ин чатро барои худатон пок кунед?")) {
+            localStorage.setItem('cleared_' + userData.phone + '_' + id, Date.now());
+            alert("Чат пок шуд!");
+            if(currentChatRoomId === id) { loadChatMessages(id); }
+        }
+    }
+
     function toggleSubscription(itemId, type, event) {
         if(event) event.stopPropagation();
         if(subscriptionsData[itemId]) { database.ref('subscriptions/' + userData.phone + '/' + itemId).remove(); }
@@ -590,7 +579,6 @@
     function renderRoomsUI() {
         let myRoomsHTML = ""; let allRoomsHTML = "";
         roomsData.forEach(room => {
-            if(filterByCreatorPhone && room.creatorPhone !== filterByCreatorPhone) return;
             let lockIcon = room.pass ? "🔒" : "🔓";
             let isSubbed = subscriptionsData[room.id] ? "🔔" : "🔕";
             let bellHTML = room.creatorPhone !== userData.phone ? `<button class="bell-btn" onclick="toggleSubscription('${room.id}', 'room', event)">${isSubbed}</button>` : '';
@@ -601,7 +589,7 @@
                         <img src="${room.img || defaultAvatar}" class="room-avatar">
                         <div class="card-info" style="flex:1; margin-left:10px;">
                             <b>🏢 ${room.name}</b>
-                            <span style="font-size:11px; color:gray;">Аз: ${room.creatorName} (${room.creatorPhone})</span>
+                            <span style="font-size:11px; color:gray;">Аз: ${room.creatorName}</span>
                         </div>
                         <span class="lock-icon">${lockIcon}</span>
                         ${bellHTML}
@@ -611,6 +599,8 @@
             if(room.creatorPhone === userData.phone) {
                 myRoomsHTML += `
                     <div class="item-card">
+                        <!-- Тугмаи карзина дар болои рамка аз тарафи рост -->
+                        <button class="top-delete-trash" onclick="deleteRoom('${room.id}', event)" title="Нест кардан">🗑️</button>
                         <div class="card-main-info" onclick="tryEnterRoom('${room.id}', 'room')">
                             <img src="${room.img || defaultAvatar}" class="room-avatar">
                             <div class="card-info" style="flex:1; margin-left:10px;"><b>🏢 ${room.name}</b></div>
@@ -618,7 +608,7 @@
                         <div class="room-actions">
                             <button class="action-btn btn-enter" onclick="tryEnterRoom('${room.id}', 'room')">Ворид</button>
                             <button class="action-btn btn-edit" onclick="openEditRoom('${room.id}', event)">✏️ Таҳрир</button>
-                            <button class="action-btn btn-delete" onclick="deleteRoom('${room.id}', event)">❌ Нест</button>
+                            <button class="action-btn btn-clear" onclick="clearLocalChat('${room.id}', event)">🧼 Пок кардан</button>
                         </div>
                     </div>`;
             }
@@ -640,7 +630,7 @@
                         <img src="${group.img || defaultAvatar}" class="room-avatar">
                         <div class="card-info" style="flex:1; margin-left:10px;">
                             <b>👥 ${group.name}</b>
-                            <span style="font-size:11px; color:gray;">Аз: ${group.creatorName} (${group.creatorPhone})</span>
+                            <span style="font-size:11px; color:gray;">Аз: ${group.creatorName}</span>
                         </div>
                         <span class="lock-icon">${lockIcon}</span>
                         ${bellHTML}
@@ -650,6 +640,8 @@
             if(group.creatorPhone === userData.phone) {
                 myGroupsHTML += `
                     <div class="item-card">
+                        <!-- Тугмаи карзина дар болои рамка аз тарафи рост -->
+                        <button class="top-delete-trash" onclick="deleteGroup('${group.id}', event)" title="Нест кардан">🗑️</button>
                         <div class="card-main-info" onclick="tryEnterRoom('${group.id}', 'group')">
                             <img src="${group.img || defaultAvatar}" class="room-avatar">
                             <div class="card-info" style="flex:1; margin-left:10px;"><b>👥 ${group.name}</b></div>
@@ -657,7 +649,7 @@
                         <div class="room-actions">
                             <button class="action-btn btn-enter" onclick="tryEnterRoom('${group.id}', 'group')">Ворид</button>
                             <button class="action-btn btn-edit" onclick="openEditGroup('${group.id}', event)">✏️ Таҳрир</button>
-                            <button class="action-btn btn-delete" onclick="deleteGroup('${group.id}', event)">❌ Нест</button>
+                            <button class="action-btn btn-clear" onclick="clearLocalChat('${group.id}', event)">🧼 Пок кардан</button>
                         </div>
                     </div>`;
             }
