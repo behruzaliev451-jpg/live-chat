@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Воридшавӣ</title>
+    <title>Чат барнома</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: #f5f7fb; display: flex; justify-content: center; align-items: center; height: 100vh; height: 100dvh; overflow: hidden; }
@@ -20,15 +20,16 @@
         .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; color: #718096; outline: none; }
 
         .btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; }
-        
-        /* ЭКРАНИ НАВ БАЪДИ ВОРИДШАВӢ */
-        #main-screen { display: none; flex-direction: column; justify-content: center; align-items: center; height: 100%; padding: 20px; text-align: center; }
+
+        /* ҚИСМИ ДОХИЛИ БАРНОМА */
+        #app-content { display: none; flex-direction: column; pading: 20px; width: 100%; height: 100%; background: #f8fafc; padding: 20px; }
     </style>
 </head>
 <body>
 
 <div class="phone-container">
 
+    <!-- КИСМИ ВОРИДШАВИ -->
     <div id="auth-screen">
         <div class="auth-form">
             <h2 style="margin-bottom: 10px;">Воридшавӣ / Сабти ном</h2>
@@ -42,10 +43,17 @@
         </div>
     </div>
 
-    <div id="main-screen">
-        <h2 id="welcome-message">Хуш омадед!</h2>
-        <p style="color: gray; margin-top: 10px;">Шумо бомуваффақият вориди барнома шудед.</p>
-        <button class="btn" onclick="logout()" style="margin-top: 20px; background: #ff3b30;">Баромадан</button>
+    <!-- КИСМИ ДОХИЛИ БАРНОМА (Я КИСМИ ТАМОМ ДИГАР КИ ДАРКОР КУНЕД) -->
+    <div id="app-content">
+        <h2>Шумо бомуваффақият ворид шудед!</h2>
+        <p style="color: gray; margin-top: 5px;" id="user-welcome"></p>
+        
+        <!-- Дар ин ҷо метавонед коди қисми нави барномаро ҷойгир кунед -->
+        <div style="margin-top: 30px;">
+            <p>Ин ҷо қисми дарунии барнома аст.</p>
+        </div>
+
+        <button class="btn" onclick="logout()" style="margin-top: auto; background: #ff3b30;">Баромадан аз профил</button>
     </div>
 
 </div>
@@ -74,7 +82,7 @@
         let savedUser = localStorage.getItem('chat_user_data');
         if(savedUser) {
             userData = JSON.parse(savedUser);
-            enterApp();
+            enterApp(); // Агар пеш ворид шуда бошад, рост ба барнома мегузарад
         }
     }
 
@@ -103,7 +111,7 @@
                 if(serverUser.password === pass) {
                     userData = serverUser;
                     localStorage.setItem('chat_user_data', JSON.stringify(userData));
-                    enterApp();
+                    enterApp(); // Ба дохили барнома мегузарад
                 } else {
                     alert("Ин рақами телефон аллакай сабт шудааст ва рамзи воридкардаи шумо нодуруст аст!");
                 }
@@ -111,25 +119,23 @@
                 userData = { name: name, phone: phone, password: pass, img: defaultAvatar, followedGroups: {} };
                 database.ref('users/' + phone).set(userData).then(() => {
                     localStorage.setItem('chat_user_data', JSON.stringify(userData));
-                    enterApp();
+                    enterApp(); // Баъди сабти номи нав ҳам рост ба дохили барнома мегузарад
                 });
             }
-        }).catch((error) => {
-            alert("Хатогӣ ҳангоми пайвастшавӣ ба Firebase: " + error.message);
         });
     }
 
-    // ФУНКСИЯИ ВОРИД ШУДАН БА БАРНОМА
+    // ФУНКСИЯИ АСОСИИ ВОРИД ШУДАН БА БАРНОМА
     function enterApp() {
-        document.getElementById('auth-screen').style.display = 'none';
-        document.getElementById('main-screen').style.display = 'flex';
-        document.getElementById('welcome-message').innerText = "Хуш омадед, " + userData.name + "!";
+        document.getElementById('auth-screen').style.display = 'none'; // Формаи авторизатсияро маҳкам мекунад
+        document.getElementById('app-content').style.display = 'flex'; // Экрани даруни барномаро нишон медиҳад
+        document.getElementById('user-welcome').innerText = "Корбар: " + userData.name + " (" + userData.phone + ")";
     }
 
-    // ФУНКСИЯИ БАРОМАДАН
+    // БАРОМАДАН
     function logout() {
         localStorage.removeItem('chat_user_data');
-        document.getElementById('main-screen').style.display = 'none';
+        document.getElementById('app-content').style.display = 'none';
         document.getElementById('auth-screen').style.display = 'flex';
         document.getElementById('username').value = "";
         document.getElementById('userphone').value = "";
