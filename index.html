@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Чат бо дизайни махсуси галчкаҳо ва ҳисобкунак</title>
+    <title>Чат бо Менюи се нуқта ва режими Гурӯҳ/Канал</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: #f5f7fb; display: flex; justify-content: center; align-items: center; height: 100vh; height: 100dvh; overflow: hidden; }
@@ -16,9 +16,21 @@
         .auth-form { width: 100%; max-width: 350px; background: white; padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
 
         #chat-window { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #f0f2f5; z-index: 50; display: none; flex-direction: column; overflow: hidden; }
-        .chat-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
+        .chat-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; position: relative; }
+        .header-left { display: flex; align-items: center; gap: 15px; }
         .back-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
-         
+        
+        /* Тугмаҳои се нуқта ва Подписаться */
+        .menu-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; padding: 0 5px; }
+        .sub-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer; display: none; transition: background 0.3s; }
+        .sub-btn.subscribed { background: #22c55e !important; color: white; }
+
+        /* Менюи контекстӣ */
+        .context-menu { position: absolute; top: 55px; right: 15px; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: none; flex-direction: column; z-index: 60; overflow: hidden; min-width: 160px; animation: fadeIn 0.15s ease; }
+        .context-menu button { background: none; border: none; padding: 12px 16px; text-align: left; font-size: 14px; cursor: pointer; color: #333; width: 100%; }
+        .context-menu button:hover { background: #f1f5f9; }
+        .context-menu button.danger { color: #ef4444; }
+
         .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
          
         .date-divider { text-align: center; margin: 10px 0; display: flex; align-items: center; justify-content: center; width: 100%; }
@@ -118,11 +130,21 @@
 
     <div id="chat-window">
         <div class="chat-header">
-            <button class="back-btn" onclick="closeChat()">←</button>
-            <h4 id="chat-title">Номи чат</h4>
+            <div class="header-left">
+                <button class="back-btn" onclick="closeChat()">←</button>
+                <h4 id="chat-title">Номи чат</h4>
+            </div>
+            <div>
+                <button class="sub-btn" id="subscribe-button" onclick="toggleSubscribe()">Подписаться</button>
+                <button class="menu-btn" id="chat-menu-trigger" onclick="toggleContextMenu(event)">⋮</button>
+            </div>
+            <div class="context-menu" id="header-context-menu">
+                <button onclick="clearChatMessages()">🧹 Пок кардани чат</button>
+                <button id="group-toggle-btn" onclick="toggleRoomToGroup()">📢 Сохтани группа (Канал)</button>
+            </div>
         </div>
-        <div class="chat-messages" id="chat-messages-list"></div>
-        <div class="chat-input-area">
+        <div class="chat-messages" id="chat-messages-list" onclick="closeContextMenu()"></div>
+        <div class="chat-input-area" id="chat-input-wrapper">
             <textarea id="message-input" placeholder="Паёмак..." oninput="autoGrow(this)"></textarea>
             <button class="btn" onclick="sendMessage()" style="width: auto; padding: 10px 20px; flex-shrink: 0; height: 40px; border-radius: 18px;">Фиристодан</button>
         </div>
@@ -200,7 +222,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
 <script>
-    // Маълумоти пайвастшавӣ ба Firebase
     const firebaseConfig = {
         apiKey: "AIzaSy...",
         authDomain: "my-live-chat-ca902.firebaseapp.com",
@@ -222,7 +243,6 @@
      
     let userData = { name: "", phone: "", password: "", img: defaultAvatar };
 
-    // Ҳангоми бор шудани саҳифа
     window.onload = function() {
         document.getElementById('message-input').addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -231,11 +251,17 @@
             }
         });
 
-        // Санҷиши воридшавии автоматии корбар
         let savedUser = localStorage.getItem('chat_user_data');
         if(savedUser) {
             userData = JSON.parse(savedUser);
             enterApp();
+        }
+
+        // Пӯшидани меню бо клик берун аз он
+        window.onclick = function(event) {
+            if (!event.target.matches('.menu-btn')) {
+                closeContextMenu();
+            }
         }
     }
 
@@ -316,7 +342,7 @@
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
         document.getElementById('home-screen').classList.add('active-screen');
         loadRoomsFromServer();
-        listenToUnreadMessages(); // Фаъолсозии ҳисобкунаки паёмҳои нав берун аз чат
+        listenToUnreadMessages();
     }
 
     function logout() {
@@ -410,6 +436,7 @@
             creatorPhone: userData.phone,
             creatorName: userData.name,
             img: defaultAvatar,
+            isGroup: false,  /* Режими оддӣ дар аввал */
             link: window.location.href.split('?')[0] + "?room=" + roomId
         };
 
@@ -455,6 +482,11 @@
                 Object.keys(rooms).forEach(id => { roomsData.push(rooms[id]); });
             }
             renderRoomsUI();
+            
+            // Агар чат кушода бошад, ҳолати онро дар ҳамон замон нав кун (барои дигар корбарон)
+            if(currentChatRoomId) {
+                checkRoomTypeAndSubscription(currentChatRoomId);
+            }
         });
     }
 
@@ -465,13 +497,14 @@
         roomsData.forEach(room => {
             if(filterByCreatorPhone && room.creatorPhone !== filterByCreatorPhone) return;
             let lockIcon = room.pass ? "🔒" : "🔓";
+            let roomLabel = room.isGroup ? "📢 (Группа)" : "🏢";
 
             allRoomsHTML += `
                 <div class="item-card" onclick="tryEnterRoom('${room.id}')">
                     <div class="card-main-info">
                         <img src="${room.img || defaultAvatar}" class="room-avatar">
                         <div class="card-info" style="flex:1; margin-left:10px;">
-                            <b>🏢 ${room.name}</b>
+                            <b>${roomLabel} ${room.name}</b>
                             <span style="font-size:11px; color:gray; display:block;">Аз: ${room.creatorName}</span>
                         </div>
                         <span class="lock-icon">${lockIcon}</span>
@@ -562,16 +595,109 @@
         }
     }
 
+    /* НАВШУДА: Идоракунии равзанаи чат бо назардошти Режими Гурӯҳ ва Подписаться */
     function openChat(roomName, roomImg, roomId) {
         currentChatRoomId = roomId;
         document.getElementById('chat-title').innerText = roomName;
         document.getElementById('chat-window').style.display = 'flex';
+        
+        checkRoomTypeAndSubscription(roomId);
         loadMessages(roomId);
+    }
+
+    function checkRoomTypeAndSubscription(roomId) {
+        let room = roomsData.find(r => r.id === roomId);
+        if(!room) return;
+
+        let isOwner = room.creatorPhone === userData.phone;
+        let menuTrigger = document.getElementById('chat-menu-trigger');
+        let subBtn = document.getElementById('subscribe-button');
+        let inputWrapper = document.getElementById('chat-input-wrapper');
+        let groupToggleBtn = document.getElementById('group-toggle-btn');
+
+        // Танзим барои Соҳиби комната (Админ)
+        if(isOwner) {
+            menuTrigger.style.display = "block"; // Се нуқта нишон дода мешавад
+            subBtn.style.display = "none";       // Тугмаи подписаться лозим нест
+            inputWrapper.style.display = "flex"; // Қуттии навишт ҳамеша ҳаст
+            
+            if(room.isGroup) {
+                groupToggleBtn.innerText = "👥 Баргардонидан ба Чат";
+            } else {
+                groupToggleBtn.innerText = "📢 Сохтани группа (Канал)";
+            }
+        } 
+        // Танзим барои дигар Корбарон
+        else {
+            if(room.isGroup) {
+                // Агар Гурӯҳ (Канал) сохта шуда бошад:
+                menuTrigger.style.display = "none";  // Се нуқта нест мешавад
+                subBtn.style.display = "block";      // Тугмаи подписаться пайдо мешавад
+                inputWrapper.style.display = "none"; // Кутии паёмнависӣ нест мешавад
+                
+                // Санҷиши обунаи корбар дар Firebase
+                database.ref(`rooms/${roomId}/subscribers/${userData.phone}`).on('value', (subSnap) => {
+                    if(subSnap.exists() && subSnap.val() === true) {
+                        subBtn.innerText = "Подписан ✓";
+                        subBtn.classList.add('subscribed');
+                    } else {
+                        subBtn.innerText = "Подписаться";
+                        subBtn.classList.remove('subscribed');
+                    }
+                });
+            } else {
+                // Агар чати оддии кушода бошад:
+                menuTrigger.style.display = "none";
+                subBtn.style.display = "none";
+                inputWrapper.style.display = "flex"; // Дигарон ҳам навишта метавонанд
+            }
+        }
+    }
+
+    /* НАВШУДА: Функсияҳои менюи се нукта ва режимҳо */
+    function toggleContextMenu(event) {
+        event.stopPropagation();
+        let menu = document.getElementById('header-context-menu');
+        menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+    }
+
+    function closeContextMenu() {
+        document.getElementById('header-context-menu').style.display = 'none';
+    }
+
+    function clearChatMessages() {
+        if(confirm("Оё мехоҳед тамоми паёмҳои ин чатро пок кунед?")) {
+            database.ref('messages/' + currentChatRoomId).remove().then(() => {
+                alert("Чат комилан пок карда шуд!");
+                closeContextMenu();
+            });
+        }
+    }
+
+    function toggleRoomToGroup() {
+        let room = roomsData.find(r => r.id === currentChatRoomId);
+        if(!room) return;
+
+        let nextState = !room.isGroup;
+        database.ref(`rooms/${currentChatRoomId}/isGroup`).set(nextState).then(() => {
+            let msg = nextState ? "Режими Гурӯҳ (Канал) фаъол шуд! Корбарони дигар танҳо хонда метавонанд." : "Режими чати оддӣ барқарор шуд!";
+            alert(msg);
+            closeContextMenu();
+        });
+    }
+
+    function toggleSubscribe() {
+        let subBtn = document.getElementById('subscribe-button');
+        let isSubscribed = subBtn.classList.contains('subscribed');
+        
+        // Иваз кардани ҳолат дар сервер
+        database.ref(`rooms/${currentChatRoomId}/subscribers/${userData.phone}`).set(!isSubscribed);
     }
 
     function closeChat() {
         if(currentChatRoomId) {
             database.ref('messages/' + currentChatRoomId).off();
+            database.ref(`rooms/${currentChatRoomId}/subscribers/${userData.phone}`).off();
         }
         currentChatRoomId = "";
         document.getElementById('chat-window').style.display = 'none';
@@ -589,7 +715,6 @@
                 Object.keys(messages).forEach(msgId => {
                     let m = messages[msgId];
                     
-                    // Хонда шудани паёмро қайд мекунем, агар паёми дигарон бошад
                     if(m.phone !== userData.phone && (!m.seenBy || !m.seenBy[userData.phone])) {
                         database.ref(`messages/${roomId}/${msgId}/seenBy/${userData.phone}`).set(true);
                     }
@@ -604,7 +729,6 @@
                     let isMe = m.phone === userData.phone;
                     let wrapperClass = isMe ? "me" : "other";
 
-                    let totalUsersCount = 2; 
                     let seenCount = m.seenBy ? Object.keys(m.seenBy).length : 0;
                     let ticks = "✓";
                     let tickClass = "delivered";
@@ -687,7 +811,6 @@
         return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
     }
 
-    // РӮЙХАТИ ЧАТҲОИ ФАЪОЛ ВА ҲИСОБКУНАКИ ПАЁМҲОИ НАХОНДА БЕРУН АЗ ЧАТ
     function listenToUnreadMessages() {
         database.ref('messages').on('value', (snapshot) => {
             let allMessages = snapshot.val();
@@ -702,17 +825,12 @@
                         let unreadForThisRoom = 0;
 
                         messagesArray.forEach(m => {
-                            // Агар паём аз худи мо набошад ва дар рӯйхати ташриф овардагони мо набошад
                             if(m.phone !== userData.phone && (!m.seenBy || !m.seenBy[userData.phone])) {
                                 unreadForThisRoom++;
                             }
                         });
 
-                        // Агар айни ҳол дар ҳамон чат кушода бошем, онро 0 ҳисоб кун
-                        if(currentChatRoomId === roomId) {
-                            unreadForThisRoom = 0;
-                        }
-
+                        if(currentChatRoomId === roomId) { unreadForThisRoom = 0; }
                         totalUnreadCount += unreadForThisRoom;
 
                         messagesArray.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
@@ -722,16 +840,15 @@
                             roomId: roomId,
                             roomName: room.name,
                             roomImg: room.img,
-                            lastMessageText: lastMsg.text,
-                            lastMessageUser: lastMsg.username,
-                            timestamp: lastMsg.timestamp || 0,
+                            lastMessageText: lastMsg ? lastMsg.text : "Паём нест",
+                            lastMessageUser: lastMsg ? lastMsg.username : "",
+                            timestamp: lastMsg ? lastMsg.timestamp : 0,
                             unreadCount: unreadForThisRoom
                         });
                     }
                 });
             }
 
-            // Навсозии нишондиҳандаи сурхи поёни экран (Тугмаи чат)
             let navBadge = document.getElementById('total-unread-badge');
             if(totalUnreadCount > 0) {
                 navBadge.innerText = totalUnreadCount;
@@ -757,11 +874,11 @@
                         <div class="card-info" style="flex:1; margin-left:10px; overflow:hidden;">
                             <b>🏢 ${chat.roomName}</b>
                             <span style="font-size:13px; color:#4a5568; white-space:nowrap; text-overflow:ellipsis; display:block; overflow:hidden;">
-                                <b>${chat.lastMessageUser}:</b> ${chat.lastMessageText}
+                                ${chat.lastMessageUser ? `<b>${chat.lastMessageUser}:</b> ` : ""}${chat.lastMessageText}
                             </span>
                         </div>
                         <div style="display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0;">
-                            <span style="font-size:10px; color:gray;">${formatTime(chat.timestamp)}</span>
+                            <span style="font-size:10px; color:gray;">${chat.timestamp ? formatTime(chat.timestamp) : ""}</span>
                             ${badgeHTML}
                         </div>
                     </div>
