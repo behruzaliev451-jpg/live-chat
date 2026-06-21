@@ -83,7 +83,6 @@
         .profile-avatar-big { width: 65px; height: 65px; border-radius: 50%; background: #e2e8f0; object-fit: cover; }
         .lock-icon { font-size: 18px; margin-left: auto; margin-right: 5px; }
 
-        /* СТИЛҲОИ МЕНЮИ 3 НУҚТА */
         .more-options-btn { background: none; border: none; font-size: 20px; color: #a0aec0; cursor: pointer; padding: 5px 10px; line-height: 1; z-index: 10; }
         .context-menu { position: absolute; right: 0; top: 35px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 8px; display: none; flex-direction: column; z-index: 100; min-width: 130px; border: 1px solid #edf2f7; overflow: hidden; }
         .context-menu-item { padding: 10px 14px; font-size: 13px; color: #ff3b30; background: none; border: none; text-align: left; cursor: pointer; width: 100%; font-weight: 500; }
@@ -422,6 +421,9 @@
                 Object.keys(rooms).forEach(id => { roomsData.push(rooms[id]); });
             }
             renderRoomsUI();
+            if (document.getElementById('chat-screen').classList.contains('active-screen')) {
+                renderActiveChats();
+            }
         });
     }
 
@@ -505,6 +507,12 @@
         if(confirm("Оё мехоҳед ин комнатаро нест кунед?")) {
             database.ref('rooms/' + roomId).remove();
             database.ref('messages/' + roomId).remove();
+            
+            // Тоза кардани комната аз рӯйхати фаол
+            activeChats = activeChats.filter(id => id !== roomId);
+            localStorage.setItem('active_chats_' + userData.phone, JSON.stringify(activeChats));
+            localStorage.removeItem(`unread_${roomId}_${userData.phone}`);
+            updateTotalUnreadBadge();
         }
     }
 
@@ -577,22 +585,23 @@
         document.getElementById('chat-window').style.display = 'flex';
         document.getElementById('chat-messages-list').innerHTML = "";
 
-        // Илова кардани комната ба рӯйхати махсуси фаоли худи ҳамин корбар
+        // Илова кардани комната ба рӯйхати фаол, агар пештар набуд
         if(!activeChats.includes(roomId)) {
             activeChats.push(roomId);
             localStorage.setItem('active_chats_' + userData.phone, JSON.stringify(activeChats));
         }
 
+        // Хонда шудани паёмҳо ва сифр кардани счётчик
         localStorage.setItem(`unread_${roomId}_${userData.phone}`, "0");
         updateTotalUnreadBadge();
 
-        // Пайваст кардани шунавандаи Firebase барои паёмҳо
         loadRoomMessages(roomId);
     }
 
     function closeChat() {
         currentChatRoomId = "";
         document.getElementById('chat-window').style.display = 'none';
+        updateTotalUnreadBadge();
         if(document.getElementById('chat-screen').classList.contains('active-screen')) {
             renderActiveChats();
         }
@@ -631,7 +640,6 @@
             container.innerHTML = listHTML;
             container.scrollTop = container.scrollHeight;
 
-            // Агар чат кушода бошад, паёмҳоро ҳамчун хондашуда нишон медиҳад
             if(messages) {
                 Object.keys(messages).forEach(key => {
                     if(messages[key].phone !== userData.phone && !messages[key].read) {
@@ -671,7 +679,6 @@
     }
 
     function listenToAllMessagesForNotifications() {
-        // Бор кардани комнатаҳои фаоли худи корбар аз хотираи браузери худаш
         let savedActiveChats = localStorage.getItem('active_chats_' + userData.phone);
         if(savedActiveChats) {
             activeChats = JSON.parse(savedActiveChats);
@@ -684,7 +691,7 @@
                 let msg = msgSnapshot.val();
                 if(!msg) return;
 
-                // Агар худи мо дар ин комната паём фиристода бошем, он расман ба рӯйхати фаоли мо илова мешавад
+                // 1. Агар паём аз худи мо бошад, комната автоматӣ ба рӯйхати мо илова мешавад
                 if(msg.phone === userData.phone) {
                     if(!activeChats.includes(roomId)) {
                         activeChats.push(roomId);
@@ -692,12 +699,16 @@
                     }
                 }
 
-                // Счётчик ва садо ТАНҲО барои комнатаҳое, ки дар рӯйхати фаоли ХУДИ КОРБАР ҳастанд кор мекунад
-                if (activeChats.includes(roomId)) {
+                // 2. ИСЛОҲИ АСОСӢ: Агар паёми нав аз дигар корбар ояд
+                if (msg.phone !== userData.phone) {
+                    // Агар ин паёми нав бошад ва таърихи кӯҳна набошад
                     if (!isInitialLoadMessages && !knownMessageIds[msgSnapshot.key]) {
-                        if (msg.phone !== userData.phone) {
+                        
+                        // Агар корбар умуман ба ин комната алоқаманд бошад (ё худаш сохтааст, ё ақаллан 1 бор ба он ворид шуда буд)
+                        if (activeChats.includes(roomId)) {
                             msgNotificationSound.play().catch(e => console.log("Садо кор накард:", e));
                             
+                            // Агар чати мазкур ҳозир кушода набошад, счётчикро зиёд мекунем
                             if (currentChatRoomId !== roomId) {
                                 let unreadCount = parseInt(localStorage.getItem(`unread_${roomId}_${userData.phone}`) || "0");
                                 unreadCount++;
@@ -715,12 +726,13 @@
             });
         });
 
-        setTimeout(() => { isInitialLoadMessages = false; }, 3000);
+        setTimeout(() => { isInitialLoadMessages = false; }, 2000);
     }
 
     function renderActiveChats() {
         let listHTML = "";
-        // Танҳо комнатаҳоеро филтр мекунад, ки ба рӯйхати фаоли ин корбар тааллуқ доранд
+        
+        // Филтр танҳо он комнатаҳое, ки дар рӯйхати фаоли ин корбар ҳастанд
         let myActiveRooms = roomsData.filter(room => activeChats.includes(room.id));
 
         myActiveRooms.forEach(room => {
@@ -740,7 +752,7 @@
                 </div>`;
         });
 
-        document.getElementById('active-chats-list').innerHTML = listHTML || "<p style='color:gray; font-size:14px;'>Комнатаҳои фаол мавҷуд нест.</p>";
+        document.getElementById('active-chats-list').innerHTML = listHTML || "<p style='color:gray; font-size:14px;'>Комнатаҳои фаол мавҷуд нест. Ба ягон комната ворид шавед!</p>";
     }
 
     function updateTotalUnreadBadge() {
