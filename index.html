@@ -155,13 +155,7 @@
     </div>
 
     <div id="chat-screen" class="screen">
-        <h3 style="margin-bottom: 5px;">💬 Комнатаҳои ман ва паёмакҳо</h3>
-        
-        <div class="switch-zone" style="margin-bottom: 15px;">
-            <button type="button" class="switch-option active" id="sw-chat-rooms" onclick="changeChatActiveTab('room')">🏢 Комнатаҳо</button>
-            <button type="button" class="switch-option" id="sw-chat-groups" onclick="changeChatActiveTab('group')">👥 Гурӯҳҳо</button>
-        </div>
-
+        <h3 style="margin-bottom: 10px;">💬 Комнатаҳои ман ва паёмакҳо</h3>
         <div id="active-chats-list"></div>
     </div>
 
@@ -210,6 +204,7 @@
         <div id="my-rooms-list"></div>
     </div>
 
+    <!-- ПАНЕЛИ НАВИГАТСИЯ БЕ ТУГМАИ ЗАНГУЛА -->
     <div class="bottom-nav">
         <button class="nav-item active" onclick="switchScreen('home-screen', this)">
             <svg viewBox="0 0 24 24"><path d="M19 6H5c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 12H5v-2h8v2zm4-4H5v-2h12v2zm0-4H5V8h12v2z"/></svg>Комнатаҳо
@@ -246,9 +241,9 @@
 
     let currentChatRoomId = "";
     let roomsData = []; 
+    let activeChats = []; 
     let filterByCreatorPhone = "";
     let creationType = "room"; 
-    let chatActiveTab = "room"; // Таби фаъоли экрани Чат (room ё group)
     const defaultAvatar = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
      
     let userData = { name: "", phone: "", password: "", img: defaultAvatar, followedGroups: {} };
@@ -256,6 +251,7 @@
     const msgNotificationSound = new Audio("https://raw.githubusercontent.com/behruzaliev451-jpg/live-chat/main/chat.mp3");
 
     let isInitialLoadMessages = true;
+    let knownMessageIds = {};
 
     window.onload = function() {
         document.getElementById('message-input').addEventListener('keydown', function(e) {
@@ -263,6 +259,10 @@
                 e.preventDefault();
                 sendMessage();
             }
+        });
+
+        document.addEventListener('click', function() {
+            document.querySelectorAll('.context-menu').forEach(menu => menu.style.display = 'none');
         });
 
         let savedUser = localStorage.getItem('chat_user_data');
@@ -277,14 +277,6 @@
         creationType = type;
         document.getElementById('sw-type-room').classList.toggle('active', type === 'room');
         document.getElementById('sw-type-group').classList.toggle('active', type === 'group');
-    }
-
-    // Функсияи нав барои иваз кардани табҳо дар экрани Чат
-    function changeChatActiveTab(tab) {
-        chatActiveTab = tab;
-        document.getElementById('sw-chat-rooms').classList.toggle('active', tab === 'room');
-        document.getElementById('sw-chat-groups').classList.toggle('active', tab === 'group');
-        renderActiveChats();
     }
 
     function autoGrow(element) {
@@ -425,29 +417,21 @@
         if(screenId === 'chat-screen') { renderActiveChats(); }
     }
 
-    // НАВШУДА: Рендери комнатаҳо ва гурӯҳҳои сохтаи худи корбар дар асоси таби интихобшуда
     function renderActiveChats() {
         let listBox = document.getElementById('active-chats-list');
         listBox.innerHTML = "";
-        
-        // Филтр танҳо барои он объектҳое, ки корбари ҷорӣ сохтааст
-        let myFilteredItems = roomsData.filter(r => r.creatorPhone === userData.phone && (r.roomOrGroup || 'room') === chatActiveTab);
-        
-        if(myFilteredItems.length === 0) {
-            let label = chatActiveTab === 'room' ? 'комнатаҳои' : 'гурӯҳҳои';
-            listBox.innerHTML = `<p style='color:gray; font-size:14px; text-align:center; padding:20px;'>Шумо ҳеҷ ягон ${label} сохта надоред.</p>`;
+        let chatRooms = roomsData.filter(r => r.roomOrGroup !== 'group');
+        if(chatRooms.length === 0) {
+            listBox.innerHTML = "<p style='color:gray; font-size:14px;'>Чатҳои фаъол нест.</p>";
             return;
         }
-
-        myFilteredItems.forEach(item => {
-            let icon = chatActiveTab === 'room' ? '🏢' : '👥';
+        chatRooms.forEach(room => {
             listBox.innerHTML += `
-                <div class="item-card" onclick="tryEnterRoom('${item.id}', '${chatActiveTab}')">
+                <div class="item-card" onclick="tryEnterRoom('${room.id}', 'room')">
                     <div class="card-main-info">
-                        <img src="${item.img || defaultAvatar}" class="room-avatar">
+                        <img src="${room.img || defaultAvatar}" class="room-avatar">
                         <div class="card-info" style="flex:1; margin-left:10px;">
-                            <b>${icon} ${item.name}</b>
-                            <span style="font-size:11px; color:gray; display:block;">Сохтаи шумо</span>
+                            <b>🏢 ${room.name}</b>
                         </div>
                     </div>
                 </div>`;
@@ -481,9 +465,6 @@
                 Object.keys(rooms).forEach(id => { roomsData.push(rooms[id]); });
             }
             renderRoomsUI();
-            if(document.getElementById('chat-screen').classList.contains('active-screen')) {
-                renderActiveChats();
-            }
         });
     }
 
