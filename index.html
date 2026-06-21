@@ -20,6 +20,9 @@
         .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; color: #718096; outline: none; }
 
         .btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; }
+        
+        /* ЭКРАНИ НАВ БАЪДИ ВОРИДШАВӢ */
+        #main-screen { display: none; flex-direction: column; justify-content: center; align-items: center; height: 100%; padding: 20px; text-align: center; }
     </style>
 </head>
 <body>
@@ -37,6 +40,12 @@
             </div>
             <button class="btn" onclick="login()">Ворид шудан</button>
         </div>
+    </div>
+
+    <div id="main-screen">
+        <h2 id="welcome-message">Хуш омадед!</h2>
+        <p style="color: gray; margin-top: 10px;">Шумо бомуваффақият вориди барнома шудед.</p>
+        <button class="btn" onclick="logout()" style="margin-top: 20px; background: #ff3b30;">Баромадан</button>
     </div>
 
 </div>
@@ -65,7 +74,7 @@
         let savedUser = localStorage.getItem('chat_user_data');
         if(savedUser) {
             userData = JSON.parse(savedUser);
-            alert("Шумо аллакай ворид шудаед: " + userData.name);
+            enterApp();
         }
     }
 
@@ -94,7 +103,7 @@
                 if(serverUser.password === pass) {
                     userData = serverUser;
                     localStorage.setItem('chat_user_data', JSON.stringify(userData));
-                    alert("Хуш омадед, " + userData.name + "!");
+                    enterApp();
                 } else {
                     alert("Ин рақами телефон аллакай сабт шудааст ва рамзи воридкардаи шумо нодуруст аст!");
                 }
@@ -102,10 +111,29 @@
                 userData = { name: name, phone: phone, password: pass, img: defaultAvatar, followedGroups: {} };
                 database.ref('users/' + phone).set(userData).then(() => {
                     localStorage.setItem('chat_user_data', JSON.stringify(userData));
-                    alert("Сабти ном бомуваффақият анҷом ёфт!");
+                    enterApp();
                 });
             }
+        }).catch((error) => {
+            alert("Хатогӣ ҳангоми пайвастшавӣ ба Firebase: " + error.message);
         });
+    }
+
+    // ФУНКСИЯИ ВОРИД ШУДАН БА БАРНОМА
+    function enterApp() {
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('main-screen').style.display = 'flex';
+        document.getElementById('welcome-message').innerText = "Хуш омадед, " + userData.name + "!";
+    }
+
+    // ФУНКСИЯИ БАРОМАДАН
+    function logout() {
+        localStorage.removeItem('chat_user_data');
+        document.getElementById('main-screen').style.display = 'none';
+        document.getElementById('auth-screen').style.display = 'flex';
+        document.getElementById('username').value = "";
+        document.getElementById('userphone').value = "";
+        document.getElementById('userpass').value = "";
     }
 </script>
 </body>
