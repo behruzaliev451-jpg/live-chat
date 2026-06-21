@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Чат бо Галчкаҳои WhatsApp</title>
+    <title>Чат бо дизайни махсуси галчкаҳо</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: #f5f7fb; display: flex; justify-content: center; align-items: center; height: 100vh; height: 100dvh; overflow: hidden; }
@@ -30,33 +30,31 @@
         
         .msg-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: #e2e8f0; flex-shrink: 0; }
         
-        .msg-body { display: flex; flex-direction: column; max-width: calc(100% - 40px); }
+        .msg-body { display: flex; flex-direction: column; max-width: calc(100% - 40px); position: relative; }
         .msg-wrapper.me .msg-body { align-items: flex-end; }
         .msg-wrapper.other .msg-body { align-items: flex-start; }
         
         .msg-username { font-size: 11px; color: #718096; font-weight: 600; margin-bottom: 2px; padding: 0 4px; }
         
-        .msg-text { padding: 10px 14px; border-radius: 16px; font-size: 15px; word-break: break-word; overflow-wrap: break-word; line-height: 20px; }
-        .msg-wrapper.me .msg-text { background: #667eea; color: white; border-bottom-right-radius: 4px; }
-        .msg-wrapper.other .msg-text { background: white; color: #333; border-bottom-left-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+        /* КОНТЕЙНЕРИ ҲУБОБЧА: БАРОИ ОН КИ ГАЛЧКА ДАР БОЛО БИИСТАД */
+        .msg-bubble { position: relative; border-radius: 16px; padding: 10px 14px; padding-bottom: 24px; min-width: 90px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+        .msg-wrapper.me .msg-bubble { background: #667eea; color: white; border-bottom-right-radius: 4px; padding-top: 22px; } /* Ҷой барои галчка дар боло */
+        .msg-wrapper.other .msg-bubble { background: white; color: #333; border-bottom-left-radius: 4px; }
         
-        .msg-footer { display: flex; align-items: center; gap: 6px; font-size: 10px; color: #a0aec0; margin-top: 3px; padding: 0 4px; }
-        .msg-wrapper.me .msg-footer { color: rgba(255, 255, 255, 0.7); margin-top: -18px; margin-right: 10px; float: right; position: relative; z-index: 10; font-size: 11px;}
+        .msg-text { font-size: 15px; word-break: break-word; overflow-wrap: break-word; line-height: 20px; }
         
-        /* СТИЛИ ГАЛЧКАҲО (TICKS) */
-        .ticks { font-size: 12px; margin-left: 4px; display: inline-block; font-weight: bold; }
-        .ticks.sent { color: #e2e8f0; } /* Як галчка */
-        .ticks.delivered { color: #cbd5e1; } /* Ду галчкаи хокистарӣ */
-        .ticks.read { color: #40c4ff; } /* Ду галчкаи кабуд */
+        /* ГАЛЧКАҲО ДАР БОЛОИ КУНҶИ ЧАП (ТИБҚИ НАҚШАИ ШУМО) */
+        .top-ticks { position: absolute; top: 4px; left: 10px; font-size: 11px; font-weight: bold; }
+        .top-ticks.delivered { color: rgba(255, 255, 255, 0.6); }
+        .top-ticks.read { color: #40c4ff; }
 
-        .delete-btn { background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 11px; opacity: 0.6; }
-        .delete-btn:hover { opacity: 1; }
-
-        /* Ислоҳи ҷойгиршавии соат дар дохили ҳубобча барои паёми ман */
-        .msg-wrapper.me .msg-body { position: relative; }
-        .msg-wrapper.me .msg-text { padding-bottom: 22px; min-width: 80px; }
-        .msg-wrapper.me .msg-footer { position: absolute; bottom: 4px; right: 8px; margin: 0; color: rgba(255,255,255,0.7); }
+        /* ВАҚТ ВА САТИЛ ДАР ПОЁНИ КУНҶИ РОСТ */
+        .msg-footer { position: absolute; bottom: 4px; right: 10px; display: flex; align-items: center; gap: 8px; font-size: 11px; }
+        .msg-wrapper.me .msg-footer { color: rgba(255, 255, 255, 0.75); }
         .msg-wrapper.other .msg-footer { color: #a0aec0; }
+
+        .delete-btn { background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 11px; filter: grayscale(0); line-height: 1; opacity: 0.8; }
+        .delete-btn:hover { opacity: 1; }
 
         .chat-input-area { padding: 10px; background: white; display: flex; gap: 10px; border-top: 1px solid #edf2f7; align-items: flex-end; flex-shrink: 0; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
         #message-input { flex: 1; width: 0; height: 40px; max-height: 100px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 18px; font-size: 15px; background: #f8fafc; outline: none; resize: none; overflow-y: auto; line-height: 20px; }
@@ -295,7 +293,7 @@
                     localStorage.setItem('chat_user_data', JSON.stringify(userData));
                     enterApp();
                 } else {
-                    alert("Ин рақами telephone аллакай сабт шудааст ва рамзи воридкардаи шумо нодуруст аст!");
+                    alert("Ин рақами телефон аллакай сабт шудааст ва рамзи воридкардаи шумо нодуруст аст!");
                 }
             } else {
                 userData = { name: name, phone: phone, password: pass, img: defaultAvatar };
@@ -529,7 +527,6 @@
         return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
     }
 
-    // КУШОДАНИ ЧАТ БО МАНТИҚИ ГАЛЧКАҲО (WHATSAPP TICKS)
     function openChat(title, img, roomId) {
         currentChatRoomId = roomId;
         document.getElementById('chat-title').innerText = title;
@@ -549,12 +546,9 @@
                 let sortedMessages = [];
                 Object.keys(messages).forEach(key => {
                     let m = messages[key];
-                    
-                    // Агар паёми каси дигар бошад ва ман онро ҳанӯз нахонда бошам -> "хонда шуд" мекунем
                     if(m.phone !== userData.phone && (!m.seenBy || !m.seenBy[userData.phone])) {
                         database.ref('messages/' + roomId + '/' + key + '/seenBy/' + userData.phone).set(true);
                     }
-                    
                     sortedMessages.push({ id: key, ...m });
                 });
                 
@@ -575,27 +569,30 @@
                     let deleteButtonHTML = isMe ? `<button class="delete-btn" onclick="deleteSingleMessage('${msg.id}')" title="Нест кардан">🗑️</button>` : "";
                     let timeHTML = formatTime(msg.timestamp);
                     
-                    // МАНТИҚИ ГАЛЧКАҲО БАРОИ ПАЁМҲОИ МАН
+                    // ТАЙЁР НАМУДАНИ ГАЛЧКАҲО БАРОИ КУНҶИ БОЛО
                     let ticksHTML = "";
                     if(isMe) {
                         let totalSeen = msg.seenBy ? Object.keys(msg.seenBy).length : 0;
                         if(totalSeen > 0) {
-                            ticksHTML = `<span class="ticks read">✔✔</span>`; // Ду галчкаи кабуд (Хонда шуд)
+                            ticksHTML = `<div class="top-ticks read">✔✔</div>`;
                         } else {
-                            ticksHTML = `<span class="ticks delivered">✔✔</span>`; // Ду галчкаи хокистарӣ (Расид)
+                            ticksHTML = `<div class="top-ticks delivered">✔✔</div>`;
                         }
                     }
 
+                    // НАВСОЗИИ СТРУКТУРА: ГАЛЧКА ДАР БОЛО, СОАТ ВА САТИЛ ДАР ПОЁН
                     msgList.innerHTML += `
                         <div class="msg-wrapper ${alignmentClass}">
                             <img src="${msg.userImg || defaultAvatar}" class="msg-avatar">
                             <div class="msg-body">
                                 <span class="msg-username">${isMe ? "Шумо" : msg.username}</span>
-                                <div class="msg-text">${msg.text}</div>
-                                <div class="msg-footer">
-                                    <span>${timeHTML}</span>
+                                <div class="msg-bubble">
                                     ${ticksHTML}
-                                    ${deleteButtonHTML}
+                                    <div class="msg-text">${msg.text}</div>
+                                    <div class="msg-footer">
+                                        <span>${timeHTML}</span>
+                                        ${deleteButtonHTML}
+                                    </div>
                                 </div>
                             </div>
                         </div>`;
@@ -616,10 +613,6 @@
         if(text && currentChatRoomId) {
             let msgId = "msg_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
             
-            // Ҳангоми сохтани паём худи фиристандаро ба рӯйхати хондаҳо илова мекунем
-            let initialSeen = {};
-            initialSeen[userData.phone] = true;
-
             database.ref('messages/' + currentChatRoomId + '/' + msgId).set({
                 username: userData.name, 
                 phone: userData.phone, 
