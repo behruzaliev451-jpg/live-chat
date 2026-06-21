@@ -24,11 +24,15 @@
         .msg-wrapper.me { align-self: flex-end; flex-direction: row-reverse; }
         .msg-wrapper.other { align-self: flex-start; }
         .msg-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; background: #e2e8f0; flex-shrink: 0; }
+        
+        /* Ислоҳ шуд: msg-body акнун ҳаҷми дурустро ишғол мекунад */
         .msg-body { display: flex; flex-direction: column; gap: 2px; max-width: calc(100% - 45px); }
         .msg-wrapper.me .msg-body { align-items: flex-end; }
         .msg-wrapper.other .msg-body { align-items: flex-start; }
         .msg-username { font-size: 11px; color: #718096; font-weight: 600; margin: 0 4px; }
-        .msg-text { padding: 10px 14px; border-radius: 14px; font-size: 15px; word-wrap: break-word; width: fit-content; }
+        
+        /* Ислоҳ шуд: Паёмакҳои дароз аз рамка берун намебароянд */
+        .msg-text { padding: 10px 14px; border-radius: 14px; font-size: 15px; width: fit-content; max-width: 100%; word-break: break-word; overflow-wrap: break-word; }
         .msg-wrapper.me .msg-text { background: #667eea; color: white; border-top-right-radius: 2px; border-bottom-right-radius: 14px; }
         .msg-wrapper.other .msg-text { background: white; color: #333; border-top-left-radius: 2px; border-bottom-left-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         
@@ -37,10 +41,12 @@
 
         .chat-input-area { padding: 10px; background: white; display: flex; gap: 10px; border-top: 1px solid #edf2f7; align-items: center; flex-shrink: 0; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
         
+        /* Ислоҳ шуд: Майдони навишт дар дохили флекс дуруст ҷойгир мешавад */
+        #message-input { flex: 1; width: 0; }
+
         input[type="text"], input[type="tel"], input[type="password"] { width: 100%; padding: 12px 16px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 16px; background: #f8fafc; outline: none; -webkit-appearance: none; }
         input:focus { border-color: #667eea; background: #fff; }
         
-        /* Стили барои қуттии рамз бо чашмак */
         .password-container { position: relative; width: 100%; }
         .password-container input { padding-right: 45px; }
         .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; color: #718096; outline: none; }
@@ -103,20 +109,17 @@
         <div class="chat-messages" id="chat-messages-list"></div>
         <div class="chat-input-area">
             <input type="text" id="message-input" placeholder="Паёмак..." style="margin:0;">
-            <button class="btn" onclick="sendMessage()" style="width: auto; padding: 10px 20px;">Фиристодан</button>
+            <button class="btn" onclick="sendMessage()" style="width: auto; padding: 10px 20px; flex-shrink: 0;">Фиристодан</button>
         </div>
     </div>
 
     <div id="home-screen" class="screen">
         <input type="text" id="search-input" onkeyup="searchFunction()" placeholder="🔍 Ҷустуҷӯ бо номи комната ё рақам...">
-        
         <div id="search-user-result"></div>
-        
         <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0;">
             <h3 id="rooms-list-title">🏢 Ҳамаи Комнатаҳо</h3>
             <button id="reset-filter-btn" class="btn btn-secondary btn-sm" onclick="resetRoomFilter()" style="display: none; margin: 0;">Ҳамаашро нишон деҳ</button>
         </div>
-        
         <div id="all-rooms-list"></div>
     </div>
 
@@ -216,15 +219,14 @@
         }
     }
 
-    // Функсияи нав барои кор кардани тугмаи Чашм
     function togglePasswordVisibility(inputId, btn) {
         let input = document.getElementById(inputId);
         if (input.type === "password") {
             input.type = "text";
-            btn.innerText = "🙈"; // Нишонаи пӯшидани чашм
+            btn.innerText = "🙈";
         } else {
             input.type = "password";
-            btn.innerText = "👁️"; // Нишонаи кушодани чашм
+            btn.innerText = "👁️";
         }
     }
 
@@ -372,7 +374,6 @@
             document.getElementById('edit-name').value = userData.name;
             document.getElementById('edit-phone').value = userData.phone;
             document.getElementById('edit-pass').value = userData.password || "";
-            // Ҳангоми кушодани форма навъи майдонро дубора ба "password" мегардонем
             document.getElementById('edit-pass').type = "password";
             box.querySelector('.toggle-password').innerText = "👁️";
             box.style.display = 'block';
@@ -604,32 +605,9 @@
             Object.keys(allMessages).forEach(roomId => {
                 let room = roomsData.find(r => r.id === roomId); if(!room) return;
                 let messagesArray = Object.values(allMessages[roomId]);
-                if(messagesArray.length === 0) return;
-                let lastMessage = messagesArray[messagesArray.length - 1];
-                activeChats.push({
-                    id: roomId, title: room.name, lastMsg: lastMessage.text, lastUser: lastMessage.username, img: room.img, unread: lastMessage.phone !== userData.phone
-                });
             });
-            if(document.getElementById('chat-screen').classList.contains('active-screen')) renderActiveChats();
         });
     }
-
-    function renderActiveChats() {
-        let container = document.getElementById('active-chats-list'); container.innerHTML = activeChats.length ? "" : "<p style='color:gray; text-align:center;'>Чатҳо нест.</p>";
-        activeChats.forEach(chat => {
-            container.innerHTML += `
-                <div class="item-card" onclick="openChat('${chat.title}', '${chat.img}', '${chat.id}')">
-                    <div class="card-main-info">
-                        <img src="${chat.img || defaultAvatar}" class="room-avatar">
-                        <div class="card-info" style="flex:1; margin-left:10px;"><b>💬 ${chat.title}</b><br><small>${chat.lastUser}: ${chat.lastMsg}</small></div>
-                    </div>
-                </div>`;
-        });
-    }
-
-    function shareRoom(link) { navigator.clipboard.writeText(link).then(() => { alert("🔗 Ссылка нусхабардорӣ шуд!"); }); }
-    function editRoom(id) { let room = roomsData.find(r => r.id === id); if(room) { let n = prompt("Номи нав:", room.name); if(n) database.ref('rooms/' + id).update({ name: n }); } }
-    function deleteRoom(id) { if(confirm("Нест карда шавад?")) { database.ref('rooms/' + id).remove(); database.ref('messages/' + id).remove(); } }
 </script>
 </body>
 </html>
