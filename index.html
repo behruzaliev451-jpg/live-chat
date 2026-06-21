@@ -53,7 +53,6 @@
         .delete-btn { background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 11px; filter: grayscale(0); line-height: 1; opacity: 0.8; }
         .delete-btn:hover { opacity: 1; }
 
-        /* СТИЛҲОИ ИНДИКАТОРҲОИ СУРХ */
         .badge { background: #ff3b30; color: white; border-radius: 10px; padding: 2px 7px; font-size: 11px; font-weight: bold; display: inline-block; min-width: 18px; text-align: center; }
         .nav-item { position: relative; }
         .nav-badge { position: absolute; top: 4px; right: 10%; background: #ff3b30; color: white; border-radius: 10px; padding: 1px 6px; font-size: 10px; font-weight: bold; min-width: 16px; text-align: center; display: none; }
@@ -83,7 +82,6 @@
         .profile-avatar-big { width: 65px; height: 65px; border-radius: 50%; background: #e2e8f0; object-fit: cover; }
         .lock-icon { font-size: 18px; margin-left: auto; margin-right: 5px; }
 
-        /* СТИЛҲОИ МЕНЮИ 3 НУҚТА */
         .more-options-btn { background: none; border: none; font-size: 20px; color: #a0aec0; cursor: pointer; padding: 5px 10px; line-height: 1; z-index: 10; }
         .context-menu { position: absolute; right: 0; top: 35px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 8px; display: none; flex-direction: column; z-index: 100; min-width: 130px; border: 1px solid #edf2f7; overflow: hidden; }
         .context-menu-item { padding: 10px 14px; font-size: 13px; color: #ff3b30; background: none; border: none; text-align: left; cursor: pointer; width: 100%; font-weight: 500; }
@@ -105,7 +103,6 @@
         .user-profile-box { background: linear-gradient(135deg, #f6f8fb, #eef2f7); padding: 15px; border-radius: 14px; margin-bottom: 15px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 15px; }
         hr { border: 0; height: 1px; background: #e2e8f0; margin: 20px 0; }
 
-        /* ИЛОВАИ ДИЗАЙНИ ПЕРЕКЛЮЧАТЕЛЬ ВА ЗАНГУЛА */
         .switch-zone { display: flex; background: #edf2f7; border-radius: 12px; padding: 4px; margin: 10px 0; }
         .switch-option { flex: 1; border: none; background: none; padding: 10px; font-weight: bold; border-radius: 10px; cursor: pointer; font-size: 14px; transition: all 0.2s ease; color: #718096; }
         .switch-option.active { background: white; color: #667eea; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
@@ -207,15 +204,13 @@
         <div id="my-rooms-list"></div>
     </div>
 
+    <!-- ПАНЕЛИ НАВИГАТСИЯ БЕ ТУГМАИ ЗАНГУЛА -->
     <div class="bottom-nav">
         <button class="nav-item active" onclick="switchScreen('home-screen', this)">
             <svg viewBox="0 0 24 24"><path d="M19 6H5c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 12H5v-2h8v2zm4-4H5v-2h12v2zm0-4H5V8h12v2z"/></svg>Комнатаҳо
         </button>
         <button class="nav-item" onclick="switchScreen('groups-screen', this)">
             <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 1.34 5 3s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>Группаҳо
-        </button>
-        <button class="nav-item" onclick="alert('Шумораи паёмакҳои нав дар зангулаи даруни ҳар як гурӯҳ ба таври зинда нишон дода мешавад!')">
-            <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1-1.5-1s-1.5.17-1.5 1v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>🔔
         </button>
         <button class="nav-item" onclick="switchScreen('chat-screen', this)">
             <div class="nav-badge" id="total-unread-badge">0</div>
@@ -248,15 +243,13 @@
     let roomsData = []; 
     let activeChats = []; 
     let filterByCreatorPhone = "";
-    let creationType = "room"; // Навъи сохташаванда ба таври пешфарз
+    let creationType = "room"; 
     const defaultAvatar = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
      
     let userData = { name: "", phone: "", password: "", img: defaultAvatar, followedGroups: {} };
 
-    // ОБЪЕКТИ САДО БО ЛИНКИ МУСТАҚИМИ ШУМО
     const msgNotificationSound = new Audio("https://raw.githubusercontent.com/behruzaliev451-jpg/live-chat/main/chat.mp3");
 
-    // Идентификаторҳо барои пешгирӣ аз пахши садо ҳангоми бори аввал бор шудани чатҳо
     let isInitialLoadMessages = true;
     let knownMessageIds = {};
 
@@ -280,7 +273,6 @@
         }
     }
 
-    // ТАҒЙИР ДОДАНИ ТИПИ СОХТОР (КОМНАТА Ё ГРУППА)
     function changeCreationType(type) {
         creationType = type;
         document.getElementById('sw-type-room').classList.toggle('active', type === 'room');
@@ -425,7 +417,6 @@
         if(screenId === 'chat-screen') { renderActiveChats(); }
     }
 
-    // РУЙХАТИ ЧАТҲОИ ФЕЪЛӢ
     function renderActiveChats() {
         let listBox = document.getElementById('active-chats-list');
         listBox.innerHTML = "";
@@ -477,7 +468,6 @@
         });
     }
 
-    // ФУНКСИЯИ ОБУНА ШУДАН БА ГРУППА
     function groupSubscribe(roomId, event) {
         event.stopPropagation();
         if(!userData.followedGroups) userData.followedGroups = {};
@@ -651,7 +641,6 @@
         renderRoomsUI();
     }
 
-    // МУҲИМ: КУШОДАНИ ЧАТ БО НАЗОРАТИ ТИПИ ГРУППА ВА АДМИН
     function tryEnterRoom(roomId, type) {
         currentChatRoomId = roomId;
         let room = roomsData.find(r => r.id === roomId);
@@ -665,7 +654,6 @@
         document.getElementById('chat-title').innerText = room.name;
         document.getElementById('chat-window').style.display = 'flex';
 
-        // АГАР ГРУППА БОШАД ВА КОРБАР АДМИН НАБОШАД, БЛОК КАРДАНИ КУТТИИ НАВИШТОР
         let inputArea = document.getElementById('chat-input-block');
         if(type === 'group' || room.roomOrGroup === 'group') {
             if(room.creatorPhone === userData.phone) {
@@ -673,7 +661,6 @@
             } else {
                 inputArea.style.display = 'none'; 
             }
-            // Ҳангоми кушодани Гурӯҳ, ҳисобкунаки зангулаи онро барои худамон 0 мекунем
             database.ref('rooms/' + roomId + '/groupMsgCount').set(0);
         } else {
             inputArea.style.display = 'flex'; 
