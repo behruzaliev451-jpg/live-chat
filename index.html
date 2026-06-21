@@ -83,6 +83,7 @@
         .profile-avatar-big { width: 65px; height: 65px; border-radius: 50%; background: #e2e8f0; object-fit: cover; }
         .lock-icon { font-size: 18px; margin-left: auto; margin-right: 5px; }
 
+        /* СТИЛҲОИ МЕНЮИ 3 НУҚТА */
         .more-options-btn { background: none; border: none; font-size: 20px; color: #a0aec0; cursor: pointer; padding: 5px 10px; line-height: 1; z-index: 10; }
         .context-menu { position: absolute; right: 0; top: 35px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 8px; display: none; flex-direction: column; z-index: 100; min-width: 130px; border: 1px solid #edf2f7; overflow: hidden; }
         .context-menu-item { padding: 10px 14px; font-size: 13px; color: #ff3b30; background: none; border: none; text-align: left; cursor: pointer; width: 100%; font-weight: 500; }
@@ -232,7 +233,7 @@
     const defaultAvatar = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
      
     let userData = { name: "", phone: "", password: "", img: defaultAvatar };
-    let unreadCounts = {}; 
+    let isInitialLoad = {}; // Барои он ки ҳангоми кушодани чат паёмҳои куҳна садо надиҳанд
 
     window.onload = function() {
         document.getElementById('message-input').addEventListener('keydown', function(e) {
@@ -253,6 +254,7 @@
         }
     }
 
+    // ФУНКСИЯИ НАВИ САДО БАРОИ СОҲИБИ КОМНАТА
     function playNotificationSound() {
         try {
             let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -260,8 +262,9 @@
             let gainNode = audioCtx.createGain();
 
             oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime); 
-            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1); 
+            // Ду нотаи зебо сохта мешавад
+            oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime); // Ре (D5)
+            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1); // Ля (A5)
             
             gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
@@ -272,7 +275,7 @@
             oscillator.start();
             oscillator.stop(audioCtx.currentTime + 0.3);
         } catch(e) {
-            console.log("Садо фаъол нашуд:", e);
+            console.log("Садо фаъол нашуд, иҷозати браузер лозим аст:", e);
         }
     }
 
@@ -473,7 +476,7 @@
                         </div>
                         <div class="room-actions">
                             <button class="action-btn btn-enter" onclick="tryEnterRoom('${room.id}')">Ворид</button>
-                            <button class="action-btn btn-share" onclick="shareRoom('${room.id}')">Поделиться</button>
+                            <button class="action-btn btn-share" onclick="shareRoom('${room.link || ''}')">Поделиться</button>
                             <button class="action-btn btn-delete" onclick="deleteRoom('${room.id}')">Нест кардан</button>
                         </div>
                     </div>`;
@@ -527,8 +530,8 @@
         }
     }
 
-    function shareRoom(roomId) {
-        alert("ID-и комната барои нусхабардорӣ: " + roomId);
+    function shareRoom(link) {
+        alert("Инкишофи функцияи Share: " + link);
     }
 
     function searchFunction() {
@@ -571,8 +574,8 @@
         filterByCreatorPhone = phone;
         document.getElementById('rooms-list-title').innerText = `🏢 Комнатаҳои ${name}`;
         document.getElementById('reset-filter-btn').style.display = "inline-block";
-        document.getElementById('search-user-result').innerHTML = "";
         document.getElementById('search-input').value = "";
+        document.getElementById('search-user-result').innerHTML = "";
         renderRoomsUI();
     }
 
@@ -585,31 +588,21 @@
 
     function tryEnterRoom(roomId) {
         let room = roomsData.find(r => r.id === roomId);
-        if(!room) return;
-
-        if(room.pass && room.creatorPhone !== userData.phone) {
-            let password = prompt("Ин комната рамз дорад. Рамзро ворид кунед:");
-            if(password === null) return;
-            if(password !== room.pass) { alert("Рамз нодуруст аст!"); return; }
+        if(room) {
+            if(room.pass) {
+                let userPass = prompt(`Ин комната қулф аст 🔒. Рамзро ворид кунед:`);
+                if(userPass === room.pass) { openChat(room.name, room.img, room.id); } 
+                else if(userPass !== null) { alert("Рамз нодуруст аст!"); }
+            } else { openChat(room.name, room.img, room.id); }
         }
-        openChatWindow(room);
     }
 
-    function openChatWindow(room) {
-        currentChatRoomId = room.id;
-        document.getElementById('chat-title').innerText = room.name;
+    function openChat(name, img, id) {
+        currentChatRoomId = id;
+        isInitialLoad[id] = true; // Ҳангоми аввалин бор бор шудани чат садо набарояд
+        document.getElementById('chat-title').innerText = name;
         document.getElementById('chat-window').style.display = 'flex';
-        
-        // Илова ба чатҳои фаъол
-        if(!activeChats.includes(room.id)) {
-            activeChats.push(room.id);
-        }
-
-        // Хондашуда ҳисоб кардани паёмҳо
-        unreadCounts[room.id] = 0;
-        updateTotalBadgeUI();
-
-        listenToMessages(room.id);
+        loadMessages(id);
     }
 
     function closeChat() {
@@ -618,75 +611,35 @@
         document.getElementById('chat-messages-list').innerHTML = "";
     }
 
-    function listenToMessages(roomId) {
-        database.ref('messages/' + roomId).off();
-        database.ref('messages/' + roomId).on('value', (snapshot) => {
-            if(currentChatRoomId !== roomId) return;
-            
-            let msgs = snapshot.val();
-            let html = "";
-            let lastDateStr = "";
+    function formatTime(ts) {
+        if(!ts) return "";
+        let d = new Date(ts);
+        let h = d.getHours().toString().padStart(2, '0');
+        let m = d.getMinutes().toString().padStart(2, '0');
+        return `${h}:${m}`;
+    }
 
-            if(msgs) {
-                Object.keys(msgs).forEach(msgId => {
-                    let m = msgs[msgId];
-                    let isMe = m.senderPhone === userData.phone ? "me" : "other";
-                    
-                    let date = new Date(m.timestamp);
-                    let dateStr = date.toLocaleDateString('tg-TJ', { day: 'numeric', month: 'long' });
-                    let timeStr = date.toLocaleTimeString('tg-TJ', { hour: '2-digit', minute: '2-digit' });
-
-                    if(dateStr !== lastDateStr) {
-                        html += `<div class="date-divider"><span>${dateStr}</span></div>`;
-                        lastDateStr = dateStr;
-                    }
-
-                    let ticksHtml = "";
-                    if(isMe === "me") {
-                        ticksHtml = `<span class="top-ticks read">✓✓</span>`;
-                    }
-
-                    let deleteHtml = (isMe === "me" || roomsData.find(r => r.id === roomId)?.creatorPhone === userData.phone) 
-                        ? `<button class="delete-btn" onclick="deleteMessage('${roomId}', '${msgId}')">🗑️</button>` : "";
-
-                    html += `
-                        <div class="msg-wrapper ${isMe}">
-                            <img src="${m.senderImg || defaultAvatar}" class="msg-avatar">
-                            <div class="msg-body">
-                                <span class="msg-username">${m.senderName}</span>
-                                <div class="msg-bubble">
-                                    ${ticksHtml}
-                                    <div class="msg-text">${m.text}</div>
-                                    <div class="msg-footer">
-                                        <span>${timeStr}</span>
-                                        ${deleteHtml}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>`;
-                });
-            }
-            
-            let box = document.getElementById('chat-messages-list');
-            box.innerHTML = html;
-            box.scrollTop = box.scrollHeight;
-        });
+    function formatDateDivider(ts) {
+        if(!ts) return "";
+        let d = new Date(ts);
+        return d.toLocaleDateString('tg-TJ', { day: 'numeric', month: 'long', year: 'numeric' });
     }
 
     function sendMessage() {
         let input = document.getElementById('message-input');
-        let text = input.value.trim();
-        if(!text || !currentChatRoomId) return;
+        let txt = input.value.trim();
+        if(!txt || !currentChatRoomId) return;
 
-        let msgId = database.ref().child('messages/' + currentChatRoomId).push().key;
+        let msgId = database.ref('messages/' + currentChatRoomId).push().key;
         let newMsg = {
             id: msgId,
-            text: text,
-            senderName: userData.name,
-            senderPhone: userData.phone,
-            senderImg: userData.img || defaultAvatar,
-            timestamp: firebase.database.ServerValue.TIMESTAMP
+            text: txt,
+            phone: userData.phone,
+            name: userData.name,
+            timestamp: firebase.database.ServerValue.TIMESTAMP,
+            seenBy: {}
         };
+        newMsg.seenBy[userData.phone] = true;
 
         database.ref(`messages/${currentChatRoomId}/${msgId}`).set(newMsg).then(() => {
             input.value = "";
@@ -694,67 +647,120 @@
         });
     }
 
+    // ИСЛОҲИ ПУРРАИ ФУНКСИЯИ БОР КАРДАНИ ПАЁМҲО ВА ИЛОВАИ САДО
+    function loadMessages(roomId) {
+        database.ref('messages/' + roomId).off(); // То ин ки дубора гӯш накунад
+        database.ref('messages/' + roomId).on('value', (snapshot) => {
+            if(currentChatRoomId !== roomId) return;
+            let msgs = snapshot.val();
+            let html = "";
+            let lastDateStr = "";
+            let hasNewMessageForOwner = false;
+
+            if(msgs) {
+                Object.keys(msgs).forEach(msgId => {
+                    let m = msgs[msgId];
+                    let isMe = m.phone === userData.phone;
+                    let time = formatTime(m.timestamp);
+                    let dateStr = formatDateDivider(m.timestamp);
+
+                    if(dateStr !== lastDateStr) {
+                        html += `<div class="date-divider"><span>${dateStr}</span></div>`;
+                        lastDateStr = dateStr;
+                    }
+
+                    // Агар паём аз дигар кас бошад ва хонда нашуда бошад
+                    if(!isMe && (!m.seenBy || !m.seenBy[userData.phone])) {
+                        database.ref(`messages/${roomId}/${msgId}/seenBy/${userData.phone}`).set(true);
+                        
+                        // Санҷиш: Оё ман соҳиби ин комната ҳастам?
+                        let currentRoom = roomsData.find(r => r.id === roomId);
+                        if (currentRoom && currentRoom.creatorPhone === userData.phone) {
+                            hasNewMessageForOwner = true;
+                        }
+                    }
+
+                    let ticksHtml = "";
+                    if(isMe) {
+                        let seenCount = m.seenBy ? Object.keys(m.seenBy).length : 0;
+                        if(seenCount > 0) {
+                            ticksHtml = `<span class="top-ticks read">✔✔</span>`;
+                        } else {
+                            ticksHtml = `<span class="top-ticks delivered">✔</span>`;
+                        }
+                    }
+
+                    html += `
+                        <div class="msg-wrapper ${isMe ? 'me' : 'other'}">
+                            <div class="msg-body">
+                                ${!isMe ? `<span class="msg-username">${m.name}</span>` : ''}
+                                <div class="msg-bubble">
+                                    ${ticksHtml}
+                                    <div class="msg-text">${m.text}</div>
+                                    <div class="msg-footer">
+                                        <span>${time}</span>
+                                        ${isMe ? `<button class="delete-btn" onclick="deleteMessage('${roomId}', '${msgId}')">🗑️</button>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+            }
+
+            // Агар паёми нав барои соҳиби комната омад ва ин аввалин боргирии чат нест
+            if (hasNewMessageForOwner && !isInitialLoad[roomId]) {
+                playNotificationSound();
+            }
+
+            // Баъди аввалин боргирӣ ҳолатро ба false мегузорем, то паёмҳои оянда садо диҳанд
+            if (isInitialLoad[roomId]) {
+                isInitialLoad[roomId] = false;
+            }
+
+            let box = document.getElementById('chat-messages-list');
+            box.innerHTML = html;
+            box.scrollTop = box.scrollHeight;
+        });
+    }
+
     function deleteMessage(roomId, msgId) {
-        if(confirm("Оё паёмак нест карда шавад?")) {
+        if(confirm("Оё мехоҳед ин паёмакномаро нест кунед?")) {
             database.ref(`messages/${roomId}/${msgId}`).remove();
         }
     }
 
     function listenToUnreadMessages() {
-        database.ref('messages').on('child_changed', (snapshot) => {
-            let roomId = snapshot.key;
-            if(roomId === currentChatRoomId) return;
-
-            let msgs = snapshot.val();
-            if(msgs) {
-                let keys = Object.keys(msgs);
-                let lastMsg = msgs[keys[keys.length - 1]];
-                
-                // Агар паёми охирин аз худи мо набошад ва дар рӯйхати чатҳо бошад
-                if(lastMsg.senderPhone !== userData.phone && activeChats.includes(roomId)) {
-                    unreadCounts[roomId] = (unreadCounts[roomId] || 0) + 1;
-                    playNotificationSound();
-                    updateTotalBadgeUI();
-                    renderActiveChats();
-                }
+        // Функция барои ҳисоб кардани паёмҳои хонданашуда дар менюи Чат
+        database.ref('messages').on('value', (snapshot) => {
+            let allMsgs = snapshot.val();
+            let totalUnread = 0;
+            if(allMsgs) {
+                Object.keys(allMsgs).forEach(roomId => {
+                    let roomMsgs = allMsgs[roomId];
+                    Object.keys(roomMsgs).forEach(msgId => {
+                        let m = roomMsgs[msgId];
+                        if(m.phone !== userData.phone && (!m.seenBy || !m.seenBy[userData.phone])) {
+                            totalUnread++;
+                        }
+                    });
+                });
+            }
+            let badge = document.getElementById('total-unread-badge');
+            if(totalUnread > 0) {
+                badge.innerText = totalUnread;
+                badge.style.display = "block";
+            } else {
+                badge.style.display = "none";
             }
         });
     }
 
-    function updateTotalBadgeUI() {
-        let total = Object.values(unreadCounts).reduce((a, b) => a + b, 0);
-        let badge = document.getElementById('total-unread-badge');
-        if(total > 0) {
-            badge.innerText = total;
-            badge.style.display = "block";
-        } else {
-            badge.style.display = "none";
-        }
-    }
-
     function renderActiveChats() {
-        let html = "";
-        activeChats.forEach(roomId => {
-            let room = roomsData.find(r => r.id === roomId);
-            if(!room) return;
-
-            let unread = unreadCounts[roomId] || 0;
-            let badgeHtml = unread > 0 ? `<span class="badge">${unread}</span>` : "";
-
-            html += `
-                <div class="item-card" onclick="tryEnterRoom('${room.id}')">
-                    <div class="card-main-info">
-                        <img src="${room.img || defaultAvatar}" class="room-avatar">
-                        <div class="card-info" style="flex:1; margin-left:10px;">
-                            <b>🏢 ${room.name}</b>
-                        </div>
-                        ${badgeHtml}
-                    </div>
-                </div>`;
-        });
-
-        document.getElementById('active-chats-list').innerHTML = html || "<p style='color:gray; font-size:14px;'>Чатҳои фаъол мавҷуд нест.</p>";
+        let activeHTML = "";
+        // Дар ин ҷо метавонед рӯйхати чатҳои активони корбарро нишон диҳед
+        document.getElementById('active-chats-list').innerHTML = "<p style='color:gray; font-size:14px;'>Рӯйхати чатҳои фаъоли шумо.</p>";
     }
 </script>
+
 </body>
 </html>
