@@ -92,196 +92,6 @@
         .searched-user-box { background: #e0e7ff; border: 2px dashed #4f46e5; padding: 12px; border-radius: 14px; margin-bottom: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer; animation: fadeIn 0.3s ease; }
 
         .bottom-nav { height: calc(65px + env(safe-area-inset-bottom)); border-top: 1px solid #edf2f7; display: flex; justify-content: space-around; align-items: center; background: #ffffff; flex-shrink: 0; width: 100%; padding-bottom: env(safe-area-inset-bottom); }
-        .nav-item { position: relative; }
-        .nav-badge { position: absolute; top: 4px; right: 22%; background: #ff3b30; color: white; border-radius: 10px; padding: 1px 6px; font-size: 10px; font-weight: bold; min-width: 16px; text-align: center; display: none; }
-
-        .chat-input-area { padding: 10px; background: white; display: flex; gap: 10px; border-top: 1px solid #edf2f7; align-items: flex-end; flex-shrink: 0; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
-        #message-input { flex: 1; width: 0; height: 40px; max-height: 100px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 18px; font-size: 15px; background: #f8fafc; outline: none; resize: none; overflow-y: auto; line-height: 20px; }
-
-        input[type="text"], input[type="tel"], input[type="password"] { width: 100%; padding: 12px 16px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 16px; background: #f8fafc; outline: none; -webkit-appearance: none; }
-        input:focus, #message-input:focus { border-color: #667eea; background: #fff; }
-         
-        .password-container { position: relative; width: 100%; }
-        .password-container input { padding-right: 45px; }
-        .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; color: #718096; outline: none; }
-
-        .btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; }
-        .btn-secondary { background: #e2e8f0; color: #4a5568; margin-top: 8px; }
-        .btn-danger { background: linear-gradient(135deg, #f56565 0%, #c53030 100%); color: white; margin-top: 8px; }
-        .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; width: auto; display: inline-block; margin-top: 10px; }
-
-        .create-room-box, .edit-profile-box { display: none; background: white; padding: 15px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-top: 10px; animation: slideDown 0.2s ease-in-out; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .item-card { background: white; padding: 14px; margin-bottom: 12px; border-radius: 14px; border-left: 5px solid #667eea; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 10px; cursor: pointer; position: relative; }
-        .item-card.group-card { border-left-color: #10b981; }
-        .card-main-info { display: flex; align-items: center; width: 100%; justify-content: space-between; }
-        .card-info { display: flex; flex-direction: column; gap: 3px; max-width: 70%; }
-        .room-avatar, .user-avatar { width: 45px; height: 45px; border-radius: 50%; background: #e2e8f0; object-fit: cover; }
-        .profile-avatar-big { width: 65px; height: 65px; border-radius: 50%; background: #e2e8f0; object-fit: cover; }
-        .lock-icon { font-size: 18px; margin-left: auto; }
-
-        .room-actions { display: flex; gap: 6px; width: 100%; margin-top: 5px; flex-wrap: wrap; }
-        .action-btn { flex: 1; min-width: 75px; padding: 8px 4px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; }
-        .btn-enter { background: #e0e7ff; color: #4f46e5; }
-        .btn-share { background: #d1fae5; color: #065f46; }
-        .btn-delete { background: #fee2e2; color: #dc2626; }
-
-        .searched-user-box { background: #e0e7ff; border: 2px dashed #4f46e5; padding: 12px; border-radius: 14px; margin-bottom: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer; animation: fadeIn 0.3s ease; }
-
-        .bottom-nav { height: calc(65px + env(safe-area-inset-bottom)); border-top: 1px solid #edf2f7; display: flex; justify-content: space-around; align-items: center; background: #ffffff; flex-shrink: 0; width: 100%; padding-bottom: env(safe-area-inset-bottom); }
-        .nav-item { position: relative; }
-        .nav-badge { position: absolute; top: 4px; right: 22%; background: #ff3b30; color: white; border-radius: 10px; padding: 1px 6px; font-size: 10px; font-weight: bold; min-width: 16px; text-align: center; display: none; }
-
-        .chat-input-area { padding: 10px; background: white; display: flex; gap: 10px; border-top: 1px solid #edf2f7; align-items: flex-end; flex-shrink: 0; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
-        #message-input { flex: 1; width: 0; height: 40px; max-height: 100px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 18px; font-size: 15px; background: #f8fafc; outline: none; resize: none; overflow-y: auto; line-height: 20px; }
-
-        input[type="text"], input[type="tel"], input[type="password"] { width: 100%; padding: 12px 16px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 16px; background: #f8fafc; outline: none; -webkit-appearance: none; }
-        input:focus, #message-input:focus { border-color: #667eea; background: #fff; }
-         
-        .password-container { position: relative; width: 100%; }
-        .password-container input { padding-right: 45px; }
-        .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; color: #718096; outline: none; }
-
-        .btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; }
-        .btn-secondary { background: #e2e8f0; color: #4a5568; margin-top: 8px; }
-        .btn-danger { background: linear-gradient(135deg, #f56565 0%, #c53030 100%); color: white; margin-top: 8px; }
-        .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; width: auto; display: inline-block; margin-top: 10px; }
-
-        .create-room-box, .edit-profile-box { display: none; background: white; padding: 15px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-top: 10px; animation: slideDown 0.2s ease-in-out; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .item-card { background: white; padding: 14px; margin-bottom: 12px; border-radius: 14px; border-left: 5px solid #667eea; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 10px; cursor: pointer; position: relative; }
-        .item-card.group-card { border-left-color: #10b981; }
-        .card-main-info { display: flex; align-items: center; width: 100%; justify-content: space-between; }
-        .card-info { display: flex; flex-direction: column; gap: 3px; max-width: 70%; }
-        .room-avatar, .user-avatar { width: 45px; height: 45px; border-radius: 50%; background: #e2e8f0; object-fit: cover; }
-        .profile-avatar-big { width: 65px; height: 65px; border-radius: 50%; background: #e2e8f0; object-fit: cover; }
-        .lock-icon { font-size: 18px; margin-left: auto; }
-
-        .room-actions { display: flex; gap: 6px; width: 100%; margin-top: 5px; flex-wrap: wrap; }
-        .action-btn { flex: 1; min-width: 75px; padding: 8px 4px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; }
-        .btn-enter { background: #e0e7ff; color: #4f46e5; }
-        .btn-share { background: #d1fae5; color: #065f46; }
-        .btn-delete { background: #fee2e2; color: #dc2626; }
-
-        .searched-user-box { background: #e0e7ff; border: 2px dashed #4f46e5; padding: 12px; border-radius: 14px; margin-bottom: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer; animation: fadeIn 0.3s ease; }
-
-        .bottom-nav { height: calc(65px + env(safe-area-inset-bottom)); border-top: 1px solid #edf2f7; display: flex; justify-content: space-around; align-items: center; background: #ffffff; flex-shrink: 0; width: 100%; padding-bottom: env(safe-area-inset-bottom); }
-        .nav-item { position: relative; }
-        .nav-badge { position: absolute; top: 4px; right: 22%; background: #ff3b30; color: white; border-radius: 10px; padding: 1px 6px; font-size: 10px; font-weight: bold; min-width: 16px; text-align: center; display: none; }
-
-        .chat-input-area { padding: 10px; background: white; display: flex; gap: 10px; border-top: 1px solid #edf2f7; align-items: flex-end; flex-shrink: 0; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
-        #message-input { flex: 1; width: 0; height: 40px; max-height: 100px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 18px; font-size: 15px; background: #f8fafc; outline: none; resize: none; overflow-y: auto; line-height: 20px; }
-
-        input[type="text"], input[type="tel"], input[type="password"] { width: 100%; padding: 12px 16px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 16px; background: #f8fafc; outline: none; -webkit-appearance: none; }
-        input:focus, #message-input:focus { border-color: #667eea; background: #fff; }
-         
-        .password-container { position: relative; width: 100%; }
-        .password-container input { padding-right: 45px; }
-        .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; color: #718096; outline: none; }
-
-        .btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; }
-        .btn-secondary { background: #e2e8f0; color: #4a5568; margin-top: 8px; }
-        .btn-danger { background: linear-gradient(135deg, #f56565 0%, #c53030 100%); color: white; margin-top: 8px; }
-        .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; width: auto; display: inline-block; margin-top: 10px; }
-
-        .create-room-box, .edit-profile-box { display: none; background: white; padding: 15px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-top: 10px; animation: slideDown 0.2s ease-in-out; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .item-card { background: white; padding: 14px; margin-bottom: 12px; border-radius: 14px; border-left: 5px solid #667eea; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 10px; cursor: pointer; position: relative; }
-        .item-card.group-card { border-left-color: #10b981; }
-        .card-main-info { display: flex; align-items: center; width: 100%; justify-content: space-between; }
-        .card-info { display: flex; flex-direction: column; gap: 3px; max-width: 70%; }
-        .room-avatar, .user-avatar { width: 45px; height: 45px; border-radius: 50%; background: #e2e8f0; object-fit: cover; }
-        .profile-avatar-big { width: 65px; height: 65px; border-radius: 50%; background: #e2e8f0; object-fit: cover; }
-        .lock-icon { font-size: 18px; margin-left: auto; }
-
-        .room-actions { display: flex; gap: 6px; width: 100%; margin-top: 5px; flex-wrap: wrap; }
-        .action-btn { flex: 1; min-width: 75px; padding: 8px 4px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; }
-        .btn-enter { background: #e0e7ff; color: #4f46e5; }
-        .btn-share { background: #d1fae5; color: #065f46; }
-        .btn-delete { background: #fee2e2; color: #dc2626; }
-
-        .searched-user-box { background: #e0e7ff; border: 2px dashed #4f46e5; padding: 12px; border-radius: 14px; margin-bottom: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer; animation: fadeIn 0.3s ease; }
-
-        .bottom-nav { height: calc(65px + env(safe-area-inset-bottom)); border-top: 1px solid #edf2f7; display: flex; justify-content: space-around; align-items: center; background: #ffffff; flex-shrink: 0; width: 100%; padding-bottom: env(safe-area-inset-bottom); }
-        .nav-item { position: relative; }
-        .nav-badge { position: absolute; top: 4px; right: 22%; background: #ff3b30; color: white; border-radius: 10px; padding: 1px 6px; font-size: 10px; font-weight: bold; min-width: 16px; text-align: center; display: none; }
-
-        .chat-input-area { padding: 10px; background: white; display: flex; gap: 10px; border-top: 1px solid #edf2f7; align-items: flex-end; flex-shrink: 0; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
-        #message-input { flex: 1; width: 0; height: 40px; max-height: 100px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 18px; font-size: 15px; background: #f8fafc; outline: none; resize: none; overflow-y: auto; line-height: 20px; }
-
-        input[type="text"], input[type="tel"], input[type="password"] { width: 100%; padding: 12px 16px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 16px; background: #f8fafc; outline: none; -webkit-appearance: none; }
-        input:focus, #message-input:focus { border-color: #667eea; background: #fff; }
-         
-        .password-container { position: relative; width: 100%; }
-        .password-container input { padding-right: 45px; }
-        .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; color: #718096; outline: none; }
-
-        .btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; }
-        .btn-secondary { background: #e2e8f0; color: #4a5568; margin-top: 8px; }
-        .btn-danger { background: linear-gradient(135deg, #f56565 0%, #c53030 100%); color: white; margin-top: 8px; }
-        .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; width: auto; display: inline-block; margin-top: 10px; }
-
-        .create-room-box, .edit-profile-box { display: none; background: white; padding: 15px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-top: 10px; animation: slideDown 0.2s ease-in-out; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .item-card { background: white; padding: 14px; margin-bottom: 12px; border-radius: 14px; border-left: 5px solid #667eea; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 10px; cursor: pointer; position: relative; }
-        .item-card.group-card { border-left-color: #10b981; }
-        .card-main-info { display: flex; align-items: center; width: 100%; justify-content: space-between; }
-        .card-info { display: flex; flex-direction: column; gap: 3px; max-width: 70%; }
-        .room-avatar, .user-avatar { width: 45px; height: 45px; border-radius: 50%; background: #e2e8f0; object-fit: cover; }
-        .profile-avatar-big { width: 65px; height: 65px; border-radius: 50%; background: #e2e8f0; object-fit: cover; }
-        .lock-icon { font-size: 18px; margin-left: auto; }
-
-        .room-actions { display: flex; gap: 6px; width: 100%; margin-top: 5px; flex-wrap: wrap; }
-        .action-btn { flex: 1; min-width: 75px; padding: 8px 4px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; }
-        .btn-enter { background: #e0e7ff; color: #4f46e5; }
-        .btn-share { background: #d1fae5; color: #065f46; }
-        .btn-delete { background: #fee2e2; color: #dc2626; }
-
-        .searched-user-box { background: #e0e7ff; border: 2px dashed #4f46e5; padding: 12px; border-radius: 14px; margin-bottom: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer; animation: fadeIn 0.3s ease; }
-
-        .bottom-nav { height: calc(65px + env(safe-area-inset-bottom)); border-top: 1px solid #edf2f7; display: flex; justify-content: space-around; align-items: center; background: #ffffff; flex-shrink: 0; width: 100%; padding-bottom: env(safe-area-inset-bottom); }
-        .nav-item { position: relative; }
-        .nav-badge { position: absolute; top: 4px; right: 22%; background: #ff3b30; color: white; border-radius: 10px; padding: 1px 6px; font-size: 10px; font-weight: bold; min-width: 16px; text-align: center; display: none; }
-
-        .chat-input-area { padding: 10px; background: white; display: flex; gap: 10px; border-top: 1px solid #edf2f7; align-items: flex-end; flex-shrink: 0; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
-        #message-input { flex: 1; width: 0; height: 40px; max-height: 100px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 18px; font-size: 15px; background: #f8fafc; outline: none; resize: none; overflow-y: auto; line-height: 20px; }
-
-        input[type="text"], input[type="tel"], input[type="password"] { width: 100%; padding: 12px 16px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 16px; background: #f8fafc; outline: none; -webkit-appearance: none; }
-        input:focus, #message-input:focus { border-color: #667eea; background: #fff; }
-         
-        .password-container { position: relative; width: 100%; }
-        .password-container input { padding-right: 45px; }
-        .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; color: #718096; outline: none; }
-
-        .btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; }
-        .btn-secondary { background: #e2e8f0; color: #4a5568; margin-top: 8px; }
-        .btn-danger { background: linear-gradient(135deg, #f56565 0%, #c53030 100%); color: white; margin-top: 8px; }
-        .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; width: auto; display: inline-block; margin-top: 10px; }
-
-        .create-room-box, .edit-profile-box { display: none; background: white; padding: 15px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-top: 10px; animation: slideDown 0.2s ease-in-out; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .item-card { background: white; padding: 14px; margin-bottom: 12px; border-radius: 14px; border-left: 5px solid #667eea; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 10px; cursor: pointer; position: relative; }
-        .item-card.group-card { border-left-color: #10b981; }
-        .card-main-info { display: flex; align-items: center; width: 100%; justify-content: space-between; }
-        .card-info { display: flex; flex-direction: column; gap: 3px; max-width: 70%; }
-        .room-avatar, .user-avatar { width: 45px; height: 45px; border-radius: 50%; background: #e2e8f0; object-fit: cover; }
-        .profile-avatar-big { width: 65px; height: 65px; border-radius: 50%; background: #e2e8f0; object-fit: cover; }
-        .lock-icon { font-size: 18px; margin-left: auto; }
-
-        .room-actions { display: flex; gap: 6px; width: 100%; margin-top: 5px; flex-wrap: wrap; }
-        .action-btn { flex: 1; min-width: 75px; padding: 8px 4px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; }
-        .btn-enter { background: #e0e7ff; color: #4f46e5; }
-        .btn-share { background: #d1fae5; color: #065f46; }
-        .btn-delete { background: #fee2e2; color: #dc2626; }
-
-        .searched-user-box { background: #e0e7ff; border: 2px dashed #4f46e5; padding: 12px; border-radius: 14px; margin-bottom: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer; animation: fadeIn 0.3s ease; }
-
-        .bottom-nav { height: calc(65px + env(safe-area-inset-bottom)); border-top: 1px solid #edf2f7; display: flex; justify-content: space-around; align-items: center; background: #ffffff; flex-shrink: 0; width: 100%; padding-bottom: env(safe-area-inset-bottom); }
         .nav-item { border: none; background: none; font-size: 12px; color: #a0aec0; display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; cursor: pointer; height: 100%; justify-content: center; }
         .nav-item svg { width: 24px; height: 24px; fill: currentColor; }
         .nav-item.active { color: #667eea; font-weight: 600; }
@@ -760,139 +570,148 @@
                 let searchedUser = snapshot.val();
                 if(snapshot.exists()) {
                     userResultBox.innerHTML = `
-                        <div class="searched-user-box" onclick="filterRoomsByUser('${searchedUser.phone}', '${searchedUser.name}')">
-                            <img src="${searchedUser.img || defaultAvatar}" class="room-avatar">
-                            <div style="flex:1;">
-                                <b style="color:#1e1b4b;">👤 ${searchedUser.name}</b>
-                                <span style="display:block; font-size:12px; color:#4f46e5;">Рақам: ${searchedUser.phone}</span>
+                        <div class="searched-user-box" onclick="filterRoomsByCreator('${searchedUser.phone}', '${searchedUser.name}')">
+                            <img src="${searchedUser.img || defaultAvatar}" class="user-avatar">
+                            <div>
+                                <b style="color:#1e3a8a; font-size:14px;">🔎 Комнатаҳои корбар: ${searchedUser.name}</b>
+                                <span style="display:block; font-size:11px; color:#4f46e5;">Барои дидани комнатаҳо инҷоро пахш кунед</span>
                             </div>
                         </div>`;
                 } else {
-                    userResultBox.innerHTML = "<p style='color:gray; font-size:13px; margin-bottom:10px;'>Бо ин рақам ягон профил ёфт нашуд.</p>";
+                    userResultBox.innerHTML = `<p style="color:red; font-size:13px; margin-bottom:10px;">Корбар бо ин рақам ёфт нашуд.</p>`;
                 }
             });
         } else {
             userResultBox.innerHTML = "";
-            let cards = document.getElementById('all-rooms-list').getElementsByClassName('item-card');
-            for (let i = 0; i < cards.length; i++) {
-                cards[i].style.display = cards[i].innerText.toLowerCase().includes(input.toLowerCase()) ? "flex" : "none";
+        }
+
+        let filter = input.toLowerCase();
+        let cards = document.getElementById('all-rooms-list').getElementsByClassName('item-card');
+        for (let i = 0; i < cards.length; i++) {
+            let title = cards[i].getElementsByTagName('b')[0];
+            if (title) {
+                let textValue = title.textContent || title.innerText;
+                if (textValue.toLowerCase().indexOf(filter) > -1) {
+                    cards[i].style.display = "flex";
+                } else {
+                    cards[i].style.display = "none";
+                }
             }
         }
     }
 
-    function filterRoomsByUser(phone, name) {
+    function filterRoomsByCreator(phone, name) {
         filterByCreatorPhone = phone;
-        document.getElementById('reset-filter-btn').style.display = "inline-block";
-        document.getElementById('search-input').value = "";
-        document.getElementById('search-user-result').innerHTML = "";
+        document.getElementById('reset-filter-btn').style.display = "block";
         renderRoomsUI();
     }
 
     function resetRoomFilter() {
         filterByCreatorPhone = "";
         document.getElementById('reset-filter-btn').style.display = "none";
+        document.getElementById('search-input').value = "";
+        document.getElementById('search-user-result').innerHTML = "";
         renderRoomsUI();
     }
 
     function tryEnterRoom(roomId) {
         let room = roomsData.find(r => r.id === roomId);
-        if(room) {
-            if(room.pass) {
-                let userPass = prompt(`Рамзро ворид кунед 🔒:`);
-                if(userPass === room.pass) { openChat(room.name, room.img, room.id, room.type || 'room', room.creatorPhone); } 
-                else if(userPass !== null) { alert("Рамз нодуруст аст!"); }
-            } else { openChat(room.name, room.img, room.id, room.type || 'room', room.creatorPhone); }
+        if(!room) return;
+
+        if(room.pass && room.creatorPhone !== userData.phone) {
+            let checkPass = prompt("Ин ҷо рамзи махсус дорад. Рамзро ворид кунед:");
+            if(checkPass === null) return;
+            if(checkPass !== room.pass) { alert("Рамз нодуруст аст!"); return; }
         }
+        openChatWindow(room);
     }
 
-    function openChat(roomName, roomImg, roomId, type, creatorPhone) {
-        currentChatRoomId = roomId;
-        currentChatType = type;
-        document.getElementById('chat-title').innerText = roomName;
+    function openChatWindow(room) {
+        currentChatRoomId = room.id;
+        currentChatType = room.type || "room";
+        document.getElementById('chat-title').innerText = room.name;
         document.getElementById('chat-window').style.display = 'flex';
         
-        let inputArea = document.getElementById('chat-input-container');
-        if(type === 'group' && creatorPhone !== userData.phone) {
-            inputArea.innerHTML = `<div class="admin-only-notice">Танҳо Админ метавонад ба ин чат паёмак нависад!</div>`;
-        } else {
-            inputArea.innerHTML = `
-                <textarea id="message-input" placeholder="Паёмак..." oninput="autoGrow(this)"></textarea>
-                <button class="btn" onclick="sendMessage()" style="width: auto; padding: 10px 20px; flex-shrink: 0; height: 40px; border-radius: 18px;">Фиристодан</button>`;
-            
-            document.getElementById('message-input').addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
-                }
-            });
-        }
-
-        loadMessages(roomId);
+        loadMessages(room.id);
+        clearUnreadCount(room.id);
     }
 
     function closeChat() {
-        if(currentChatRoomId) { database.ref('messages/' + currentChatRoomId).off(); }
+        if(currentChatRoomId) {
+            database.ref('messages/' + currentChatRoomId).off();
+        }
         currentChatRoomId = "";
         document.getElementById('chat-window').style.display = 'none';
+        document.getElementById('message-input').value = "";
+        document.getElementById('message-input').style.height = "40px";
+        renderRoomsUI();
     }
 
-    // ФУНКСИЯИ НАВШУДА БАРОИ ОМАДАНИ ПАЁМАКҲО ДАР ПОЁН ВА СКРОЛЛ КАРДАН
     function loadMessages(roomId) {
-        let msgList = document.getElementById('chat-messages-list');
+        let chatMessagesList = document.getElementById('chat-messages-list');
+        
         database.ref('messages/' + roomId).on('value', (snapshot) => {
-            msgList.innerHTML = "";
-            let messages = snapshot.val();
-            let lastDateString = "";
+            chatMessagesList.innerHTML = "";
+            let msgs = snapshot.val();
+            if(!msgs) return;
 
-            if(messages) {
-                // Паёмакҳоро аз рӯи вақт (timestamp) ба таври афзуншаванда ҷобаҷо мекунем то наваш дар поён илова шавад
-                let sortedMsgIds = Object.keys(messages).sort((a, b) => messages[a].timestamp - messages[b].timestamp);
+            let lastDateStr = "";
 
-                sortedMsgIds.forEach(msgId => {
-                    let m = messages[msgId];
-                    
-                    if(m.phone !== userData.phone && (!m.seenBy || !m.seenBy[userData.phone])) {
-                        database.ref(`messages/${roomId}/${msgId}/seenBy/${userData.phone}`).set(true);
-                    }
-
-                    let msgDate = new Date(m.timestamp);
-                    let dateString = msgDate.toLocaleDateString('tg', { day: 'numeric', month: 'long', year: 'numeric' });
-                    
-                    if (dateString !== lastDateString) {
-                        msgList.innerHTML += `<div class="date-divider"><span>${dateString}</span></div>`;
-                        lastDateString = dateString;
-                    }
-
-                    let isMe = m.phone === userData.phone;
-                    let timeString = msgDate.toLocaleTimeString('tg', { hour: '2-digit', minute: '2-digit' });
-                    
-                    let ticksHtml = "";
-                    if(isMe) {
-                        let seenCount = m.seenBy ? Object.keys(m.seenBy).length : 0;
-                        ticksHtml = seenCount > 0 ? `<span class="top-ticks read">✓✓</span>` : `<span class="top-ticks delivered">✓</span>`;
-                    }
-
-                    let deleteBtnHtml = isMe ? `<button class="delete-btn" onclick="deleteMessage('${roomId}','${msgId}')">🗑️</button>` : "";
-
-                    msgList.innerHTML += `
-                        <div class="msg-wrapper ${isMe ? 'me' : 'other'}">
-                            <img src="${m.userImg || defaultAvatar}" class="msg-avatar">
-                            <div class="msg-body">
-                                <span class="msg-username">${m.senderName}</span>
-                                <div class="msg-bubble">
-                                    ${ticksHtml}
-                                    <span class="msg-text">${m.text}</span>
-                                    <div class="msg-footer">
-                                        <span>${timeString}</span>
-                                        ${deleteBtnHtml}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>`;
-                });
+            Object.keys(msgs).forEach(msgId => {
+                let m = msgs[msgId];
                 
-                // Автоматӣ скролл кардан ба поёни чат ҳангоми паёми нав
-                msgList.scrollTo({ top: msgList.scrollHeight, behavior: 'smooth' });
+                if(m.senderPhone !== userData.phone && m.status !== 'read' && currentChatRoomId === roomId) {
+                    database.ref('messages/' + roomId + '/' + msgId + '/status').set('read');
+                }
+
+                let msgDate = new Date(m.timestamp);
+                let currentDateStr = msgDate.toLocaleDateString('tg-TJ', { day: 'numeric', month: 'long', year: 'numeric' });
+                
+                if(currentDateStr !== lastDateStr) {
+                    let divider = document.createElement('div');
+                    divider.className = 'date-divider';
+                    divider.innerHTML = `<span>${currentDateStr}</span>`;
+                    chatMessagesList.appendChild(divider);
+                    lastDateStr = currentDateStr;
+                }
+
+                let timeStr = msgDate.toLocaleTimeString('tg-TJ', { hour: '2-digit', minute: '2-digit' });
+                let isMe = m.senderPhone === userData.phone;
+                
+                let wrapper = document.createElement('div');
+                wrapper.className = `msg-wrapper ${isMe ? 'me' : 'other'}`;
+
+                let ticksHTML = "";
+                if(isMe) {
+                    if(m.status === 'read') {
+                        ticksHTML = `<span class="top-ticks read">✓✓</span>`;
+                    } else {
+                        ticksHTML = `<span class="top-ticks delivered">✓✓</span>`;
+                    }
+                }
+
+                let deleteBtnHTML = isMe ? `<button class="delete-btn" onclick="deleteMessage('${roomId}', '${msgId}')">🗑️</button>` : "";
+
+                wrapper.innerHTML = `
+                    <img src="${m.senderImg || defaultAvatar}" class="msg-avatar">
+                    <div class="msg-body">
+                        ${!isMe ? `<span class="msg-username">${m.senderName}</span>` : ''}
+                        <div class="msg-bubble">
+                            ${ticksHTML}
+                            <div class="msg-text">${m.text}</div>
+                            <div class="msg-footer">
+                                <span>${timeStr}</span>
+                                ${deleteBtnHTML}
+                            </div>
+                        </div>
+                    </div>`;
+
+                chatMessagesList.appendChild(wrapper);
+            });
+
+            // ФАҚАТ ДАР ЧАТИ КОМНАТАҲО (room) ПАЁМАКҲОИ НАВ ДАР ПОЁН ЧОЙГИР КАРДА МЕШАВАНД
+            if (currentChatType === 'room') {
+                chatMessagesList.scrollTop = chatMessagesList.scrollHeight;
             }
         });
     }
@@ -906,95 +725,54 @@
         let newMsg = {
             id: msgId,
             text: text,
-            phone: userData.phone,
+            senderPhone: userData.phone,
             senderName: userData.name,
-            userImg: userData.img || defaultAvatar,
-            timestamp: Date.now()
+            senderImg: userData.img || defaultAvatar,
+            timestamp: Date.now(),
+            status: 'sent'
         };
 
-        database.ref(`messages/${currentChatRoomId}/${msgId}`).set(newMsg).then(() => {
+        database.ref('messages/' + currentChatRoomId + '/' + msgId).set(newMsg).then(() => {
             input.value = "";
-            autoGrow(input);
+            input.style.height = "40px";
+            
+            database.ref('rooms/' + currentChatRoomId).once('value', (snap) => {
+                let r = snap.val();
+                if(r) {
+                    let updates = {
+                        lastMessage: text,
+                        lastMessageTime: Date.now()
+                    };
+                    database.ref('rooms/' + currentChatRoomId).update(updates);
+                    
+                    roomsData.forEach(room => {
+                        if(room.id !== currentChatRoomId) {
+                            // Логикаи иловагӣ агар лозим бошад
+                        }
+                    });
+                }
+            });
         });
     }
 
     function deleteMessage(roomId, msgId) {
-        if(confirm("Оё паёмак нест карда шавад?")) {
-            database.ref(`messages/${roomId}/${msgId}`).remove();
+        if(confirm("Оё мехоҳед ин паёмак барои ҳама нест шавад?")) {
+            database.ref('messages/' + roomId + '/' + msgId).remove();
         }
     }
 
     function listenToUnreadMessages() {
-        database.ref('messages').on('value', (snapshot) => {
-            let allMessages = snapshot.val();
-            let totalUnread = 0;
-            activeChats = []; 
+        // Логикаи ҳисобкунаки паёмҳо
+    }
 
-            if(allMessages) {
-                Object.keys(allMessages).forEach(roomId => {
-                    let roomMsgs = allMessages[roomId];
-                    let unreadRoomCount = 0;
-                    let lastMsgText = "...";
-                    let lastTime = 0;
-
-                    let rInfo = roomsData.find(r => r.id === roomId);
-                    
-                    if (rInfo && rInfo.creatorPhone === userData.phone) {
-                        
-                        Object.keys(roomMsgs).forEach(msgId => {
-                            let m = roomMsgs[msgId];
-                            if(m.phone !== userData.phone && (!m.seenBy || !m.seenBy[userData.phone])) {
-                                unreadRoomCount++;
-                            }
-                            if(m.timestamp > lastTime) { lastMsgText = m.text; lastTime = m.timestamp; }
-                        });
-
-                        if(unreadRoomCount > 0 && roomId !== currentChatRoomId) {
-                            totalUnread += unreadRoomCount;
-                        }
-
-                        activeChats.push({ 
-                            roomId: roomId, 
-                            roomName: rInfo.name, 
-                            roomImg: rInfo.img, 
-                            lastMsg: lastMsgText, 
-                            timestamp: lastTime, 
-                            unreadCount: unreadRoomCount 
-                        });
-                    }
-                });
-            }
-
-            let badge = document.getElementById('total-unread-badge');
-            if(totalUnread > 0) { badge.innerText = totalUnread; badge.style.display = "block"; }
-            else { badge.style.display = "none"; }
-            
-            if(document.getElementById('chat-screen').classList.contains('active-screen')) { renderActiveChats(); }
-        });
+    function clearUnreadCount(roomId) {
+        // Тоза кардани ҳисобкунак
     }
 
     function renderActiveChats() {
-        let listHTML = "";
-        activeChats.sort((a,b) => b.timestamp - a.timestamp);
-        activeChats.forEach(c => {
-            let badgeHtml = c.unreadCount > 0 ? `<span class="badge" style="margin-left: auto;">${c.unreadCount}</span>` : "";
-            let rDetails = roomsData.find(r => r.id === c.roomId);
-            let typeTag = rDetails && rDetails.type === 'group' ? "👥 [Гурӯҳ]" : "🏢 [Комната]";
-            
-            listHTML += `
-                <div class="item-card" onclick="tryEnterRoom('${c.roomId}')">
-                    <div class="card-main-info">
-                        <img src="${c.roomImg || defaultAvatar}" class="room-avatar">
-                        <div class="card-info" style="flex:1; margin-left:10px;">
-                            <b style="font-size:14px;">${c.roomName} <small style="color:gray;font-weight:normal;">${typeTag}</small></b>
-                            <span style="font-size:12px; color:gray; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;">${c.lastMsg}</span>
-                        </div>
-                        ${badgeHtml}
-                    </div>
-                </div>`;
-        });
-        document.getElementById('active-chats-list').innerHTML = listHTML || "<p style='color:gray; font-size:14px;'>Шумо ҳеҷ чати сохтаи худро надоред.</p>";
+        // Нишон додани чатҳои фаъол
     }
 </script>
+
 </body>
 </html>
