@@ -2,634 +2,381 @@
 <html lang="tg">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Barsnomai Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Web Clone (Firebase)</title>
+    <!-- Tailwind CSS ва FontAwesome барои тарҳи зебо -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: #f5f7fb; display: flex; justify-content: center; align-items: center; height: 100vh; height: 100dvh; overflow: hidden; }
-        .phone-container { width: 100%; max-width: 480px; height: 100vh; height: 100dvh; background: #ffffff; display: flex; flex-direction: column; position: relative; box-shadow: 0 8px 30px rgba(0,0,0,0.08); overflow: hidden; }
-        .screen { display: none; flex-direction: column; flex: 1; padding: 20px; overflow-y: auto; background: #f8fafc; -webkit-overflow-scrolling: touch; }
-        .active-screen { display: flex; animation: fadeIn 0.2s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
-        #auth-screen { display: flex; justify-content: center; align-items: center; height: 100vh; height: 100dvh; z-index: 100; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); position: absolute; width: 100%; padding: 20px; }
-        .auth-form { width: 100%; max-width: 350px; background: white; padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
-
-        #chat-window { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #f0f2f5; z-index: 50; display: none; flex-direction: column; overflow: hidden; }
-        .chat-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
-        .back-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
-        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-        
-        .msg-wrapper { display: flex; gap: 10px; width: 100%; max-width: 85%; margin-bottom: 2px; }
-        .msg-wrapper.me { align-self: flex-end; flex-direction: row-reverse; }
-        .msg-wrapper.other { align-self: flex-start; }
-        .msg-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; background: #e2e8f0; flex-shrink: 0; }
-        .msg-body { display: flex; flex-direction: column; gap: 2px; max-width: calc(100% - 45px); }
-        .msg-wrapper.me .msg-body { align-items: flex-end; }
-        .msg-wrapper.other .msg-body { align-items: flex-start; }
-        .msg-username { font-size: 11px; color: #718096; font-weight: 600; margin: 0 4px; }
-        .msg-text { padding: 10px 14px; border-radius: 14px; font-size: 15px; word-wrap: break-word; width: fit-content; }
-        .msg-wrapper.me .msg-text { background: #667eea; color: white; border-top-right-radius: 2px; border-bottom-right-radius: 14px; }
-        .msg-wrapper.other .msg-text { background: white; color: #333; border-top-left-radius: 2px; border-bottom-left-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        
-        .delete-btn { background: none; border: none; color: #ff3b30; font-size: 11px; cursor: pointer; margin-top: 2px; padding: 0 5px; opacity: 0.7; }
-        .delete-btn:hover { opacity: 1; text-decoration: underline; }
-
-        .chat-input-area { padding: 10px; background: white; display: flex; gap: 10px; border-top: 1px solid #edf2f7; align-items: center; flex-shrink: 0; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
-        
-        input[type="text"], input[type="tel"], input[type="password"] { width: 100%; padding: 12px 16px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 16px; background: #f8fafc; outline: none; -webkit-appearance: none; }
-        input:focus { border-color: #667eea; background: #fff; }
-        
-        /* Стили барои қуттии рамз бо чашмак */
-        .password-container { position: relative; width: 100%; }
-        .password-container input { padding-right: 45px; }
-        .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; color: #718096; outline: none; }
-
-        .btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; }
-        .btn-secondary { background: #e2e8f0; color: #4a5568; margin-top: 8px; }
-        .btn-danger { background: linear-gradient(135deg, #f56565 0%, #c53030 100%); color: white; margin-top: 8px; }
-        .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; width: auto; display: inline-block; margin-top: 10px; }
-
-        .create-room-box, .edit-profile-box { display: none; background: white; padding: 15px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-top: 10px; animation: slideDown 0.2s ease-in-out; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .item-card { background: white; padding: 14px; margin-bottom: 12px; border-radius: 14px; border-left: 5px solid #667eea; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 10px; cursor: pointer; position: relative; }
-        .card-main-info { display: flex; align-items: center; width: 100%; justify-content: space-between; }
-        .card-info { display: flex; flex-direction: column; gap: 3px; }
-        .room-avatar, .user-avatar { width: 45px; height: 45px; border-radius: 50%; background: #e2e8f0; object-fit: cover; }
-        .profile-avatar-big { width: 65px; height: 65px; border-radius: 50%; background: #e2e8f0; object-fit: cover; }
-        .lock-icon { font-size: 18px; margin-left: auto; }
-
-        .room-actions { display: flex; gap: 6px; width: 100%; margin-top: 5px; flex-wrap: wrap; }
-        .action-btn { flex: 1; min-width: 75px; padding: 8px 4px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; }
-        .btn-enter { background: #e0e7ff; color: #4f46e5; }
-        .btn-share { background: #d1fae5; color: #065f46; }
-        .btn-edit { background: #fef3c7; color: #d97706; }
-        .btn-delete { background: #fee2e2; color: #dc2626; }
-
-        .searched-user-box { background: #e0e7ff; border: 2px dashed #4f46e5; padding: 12px; border-radius: 14px; margin-bottom: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer; animation: fadeIn 0.3s ease; }
-
-        .bottom-nav { height: calc(65px + env(safe-area-inset-bottom)); border-top: 1px solid #edf2f7; display: flex; justify-content: space-around; align-items: center; background: #ffffff; flex-shrink: 0; width: 100%; padding-bottom: env(safe-area-inset-bottom); }
-        .nav-item { border: none; background: none; font-size: 12px; color: #a0aec0; display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; cursor: pointer; height: 100%; justify-content: center; }
-        .nav-item svg { width: 24px; height: 24px; fill: currentColor; }
-        .nav-item.active { color: #667eea; font-weight: 600; }
-        
-        .user-profile-box { background: linear-gradient(135deg, #f6f8fb, #eef2f7); padding: 15px; border-radius: 14px; margin-bottom: 15px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 15px; }
-        hr { border: 0; height: 1px; background: #e2e8f0; margin: 20px 0; }
+        /* Услуби махсуси WhatsApp */
+        .whatsapp-bg { background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); }
+        .dark .whatsapp-bg { background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); filter: invert(0.9) hue-rotate(180deg); }
+        .message-in { background-color: #ffffff; border-radius: 0px 8px 8px 8px; }
+        .message-out { background-color: #d9fdd3; border-radius: 8px 0px 8px 8px; }
+        .dark .message-in { background-color: #202c33; color: #e9edef; }
+        .dark .message-out { background-color: #005c4b; color: #e9edef; }
     </style>
 </head>
-<body>
+<body class="bg-gray-100 h-screen overflow-hidden font-sans transition-colors duration-200" id="app-body">
 
-<div class="phone-container">
-
-    <div id="auth-screen">
-        <div class="auth-form">
-            <h2 style="margin-bottom: 10px;">Воридшавӣ / Сабти ном</h2>
-            <input type="text" id="username" placeholder="Номи шумо...">
-            <input type="tel" id="userphone" placeholder="Рақами телефон (масалан: 9999)">
-            <div class="password-container">
-                <input type="password" id="userpass" placeholder="Рамзи махфии шумо...">
-                <button type="button" class="toggle-password" onclick="togglePasswordVisibility('userpass', this)">👁️</button>
+    <!-- Саҳифаи Вуруд (Auth Screen) -->
+    <div id="auth-screen" class="fixed inset-0 bg-[#00a884] flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md text-center">
+            <i class="fab fa-whatsapp text-6xl text-[#25d366] mb-4"></i>
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Хуш омадед ба Чат</h2>
+            <input type="email" id="auth-email" placeholder="Email" class="w-full p-3 border rounded mb-3 outline-none">
+            <input type="password" id="auth-password" placeholder="Рамз" class="w-full p-3 border rounded mb-4 outline-none">
+            <div class="flex gap-2">
+                <button onclick="handleLogin()" class="w-1/2 bg-[#00a884] text-white p-3 rounded font-semibold hover:bg-[#008f72]">Вуруд</button>
+                <button onclick="handleRegister()" class="w-1/2 bg-gray-200 text-gray-700 p-3 rounded font-semibold hover:bg-gray-300">Рӯйхатгирӣ</button>
             </div>
-            <button class="btn" onclick="login()">Ворид шудан</button>
         </div>
     </div>
 
-    <div id="chat-window">
-        <div class="chat-header">
-            <button class="back-btn" onclick="closeChat()">←</button>
-            <h4 id="chat-title">Номи чат</h4>
-        </div>
-        <div class="chat-messages" id="chat-messages-list"></div>
-        <div class="chat-input-area">
-            <input type="text" id="message-input" placeholder="Паёмак..." style="margin:0;">
-            <button class="btn" onclick="sendMessage()" style="width: auto; padding: 10px 20px;">Фиристодан</button>
-        </div>
-    </div>
-
-    <div id="home-screen" class="screen">
-        <input type="text" id="search-input" onkeyup="searchFunction()" placeholder="🔍 Ҷустуҷӯ бо номи комната ё рақам...">
+    <!-- Асосии Интерфейс (Main Chat Interface) -->
+    <div class="flex h-screen w-full hidden" id="main-interface">
         
-        <div id="search-user-result"></div>
-        
-        <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0;">
-            <h3 id="rooms-list-title">🏢 Ҳамаи Комнатаҳо</h3>
-            <button id="reset-filter-btn" class="btn btn-secondary btn-sm" onclick="resetRoomFilter()" style="display: none; margin: 0;">Ҳамаашро нишон деҳ</button>
-        </div>
-        
-        <div id="all-rooms-list"></div>
-    </div>
-
-    <div id="chat-screen" class="screen">
-        <h3 style="margin-bottom: 10px;">💬 Чатҳои фаъол</h3>
-        <div id="active-chats-list"></div>
-    </div>
-
-    <div id="profile-screen" class="screen">
-        <h3 style="margin-bottom: 10px;">👤 Профили ман</h3>
-        <div class="user-profile-box" id="my-profile-info"></div>
-
-        <div class="edit-profile-box" id="edit-profile-box">
-            <h4 style="margin-bottom: 5px; color: #4a5568;">Таҳрири маълумот</h4>
-            <input type="text" id="edit-name" placeholder="Номи нав">
-            <input type="tel" id="edit-phone" placeholder="Рақами нав" readonly style="background:#e2e8f0; color:gray;">
-            
-            <div class="password-container">
-                <input type="password" id="edit-pass" placeholder="Рамзи (парол)-и нав">
-                <button type="button" class="toggle-password" onclick="togglePasswordVisibility('edit-pass', this)">👁️</button>
+        <!-- Панели чап (Рӯйхати чатҳо ва профил) -->
+        <div class="w-1/3 border-r border-gray-300 dark:border-gray-700 bg-white dark:bg-[#111b21] flex flex-col h-full">
+            <!-- Header-и профил -->
+            <div class="bg-[#f0f2f5] dark:bg-[#202c33] p-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <img id="my-avatar" src="https://via.placeholder.com/150" class="w-10 h-10 rounded-full object-cover cursor-pointer" onclick="toggleProfileModal()">
+                    <span id="my-name" class="font-semibold dark:text-white text-gray-800">Корбар</span>
+                </div>
+                <div class="flex gap-4 text-gray-600 dark:text-gray-300 text-xl">
+                    <button onclick="toggleDarkMode()"><i class="fas fa-moon" id="dark-icon"></i></button>
+                    <button onclick="openCreateRoomModal()"><i class="fas fa-comment-medical"></i></button>
+                    <button onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
             </div>
 
-            <label style="font-size: 13px; color: gray; display:block; margin-top:5px;">Расми профил:</label>
-            <input type="file" id="edit-avatar-file" accept="image/*" style="margin-bottom: 10px; width: 100%;">
-            <button class="btn" onclick="saveProfileChanges()">Ҳифз кардан</button>
-            <button class="btn btn-secondary" onclick="toggleProfileForm(false)">Баргаштан</button>
+            <!-- Ҷустуҷӯ (Search) -->
+            <div class="p-2 bg-white dark:bg-[#111b21] border-b border-gray-200 dark:border-gray-800">
+                <div class="bg-[#f0f2f5] dark:bg-[#202c33] flex items-center p-2 rounded-lg">
+                    <i class="fas fa-search text-gray-500 mr-3 pl-2"></i>
+                    <input type="text" id="search-input" placeholder="Ҷустуҷӯи рӯм ё корбар..." class="bg-transparent w-full outline-none text-sm dark:text-white">
+                </div>
+            </div>
+
+            <!-- Рӯйхати Рӯмҳо ва Корбарон -->
+            <div class="flex-1 overflow-y-auto" id="rooms-list">
+                <!-- Рӯмҳо ба таври автоматӣ аз Firebase ин ҷо меоянд -->
+            </div>
         </div>
 
-        <div style="margin-top: 10px; display: flex; gap: 10px;">
-            <button class="btn" id="open-form-btn" onclick="toggleRoomForm(true)" style="flex: 1;">➕ Сохтани комната</button>
-        </div>
+        <!-- Панели рост (Оинаи чат) -->
+        <div class="w-2/3 flex flex-col h-full bg-[#efeae2] dark:bg-[#0b141a] relative">
+            <div id="no-chat-selected" class="absolute inset-0 flex flex-col items-center justify-center bg-[#f8f9fa] dark:bg-[#222e35] z-10">
+                <i class="fab fa-whatsapp text-9xl text-gray-300 dark:text-gray-700 mb-4"></i>
+                <h3 class="text-xl text-gray-600 dark:text-gray-400">WhatsApp Web Clone</h3>
+                <p class="text-sm text-gray-400 mt-2">Барои оғози чат аз рӯйхати чап рӯмро интихоб кунед.</p>
+            </div>
 
-        <div class="create-room-box" id="room-form-box">
-            <h4 style="margin-bottom: 5px; color: #4a5568;">Маълумоти комната</h4>
-            <input type="text" id="room-name" placeholder="Номи комната">
-            <input type="password" id="room-pass" placeholder="Рамз (парол) - ихтиёри">
-            <label style="font-size: 13px; color: gray; display:block; margin-top:5px;">Расми комната (Ихтиёри):</label>
-            <input type="file" id="room-icon" accept="image/*" style="margin-bottom: 10px; width: 100%;">
-            <button class="btn" onclick="createRoom()">Сохтан</button>
-            <button class="btn btn-secondary" onclick="toggleRoomForm(false)">Баргаштан</button>
-        </div>
-        
-        <hr>
-        <h3 style="margin-bottom: 10px;">📦 Комнатаҳои сохтаи ман</h3>
-        <div id="my-rooms-list"></div>
-    </div>
-
-    <div class="bottom-nav">
-        <button class="nav-item active" onclick="switchScreen('home-screen', this)">
-            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Главни
-        </button>
-        <button class="nav-item" onclick="switchScreen('chat-screen', this)">
-            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>Чат
-        </button>
-        <button class="nav-item" onclick="switchScreen('profile-screen', this)">
-            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5-3-8-3z"/></svg>Я
-        </button>
-    </div>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSy...",
-        authDomain: "my-live-chat-ca902.firebaseapp.com",
-        databaseURL: "https://my-live-chat-ca902-default-rtdb.firebaseio.com",
-        projectId: "my-live-chat-ca902",
-        storageBucket: "my-live-chat-ca902.firebasestorage.app",
-        messagingSenderId: "396836014742",
-        appId: "1:396836014742:web:..."
-    };
-    
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-
-    let currentChatRoomId = "";
-    let roomsData = []; 
-    let activeChats = []; 
-    let filterByCreatorPhone = "";
-    const defaultAvatar = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
-    
-    let userData = { name: "", phone: "", password: "", img: defaultAvatar };
-
-    window.onload = function() {
-        document.getElementById('message-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-
-        let savedUser = localStorage.getItem('chat_user_data');
-        if(savedUser) {
-            userData = JSON.parse(savedUser);
-            enterApp();
-        }
-    }
-
-    // Функсияи нав барои кор кардани тугмаи Чашм
-    function togglePasswordVisibility(inputId, btn) {
-        let input = document.getElementById(inputId);
-        if (input.type === "password") {
-            input.type = "text";
-            btn.innerText = "🙈"; // Нишонаи пӯшидани чашм
-        } else {
-            input.type = "password";
-            btn.innerText = "👁️"; // Нишонаи кушодани чашм
-        }
-    }
-
-    function checkDeepLink() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const roomId = urlParams.get('room');
-        if (roomId) {
-            window.history.replaceState({}, document.title, window.location.pathname);
-            setTimeout(() => {
-                tryEnterRoom(roomId);
-            }, 1000);
-        }
-    }
-
-    function compressImage(file, callback) {
-        let reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = function (event) {
-            let img = new Image();
-            img.src = event.target.result;
-            img.onload = function () {
-                let canvas = document.createElement('canvas');
-                let MAX_WIDTH = 120;
-                let MAX_HEIGHT = 120;
-                let width = img.width;
-                let height = img.height;
-
-                if (width > height) {
-                    if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                } else {
-                    if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
-                }
-                canvas.width = width;
-                canvas.height = height;
-                let ctx = canvas.getContext("2d");
-                ctx.drawImage(img, 0, 0, width, height);
-                callback(canvas.toDataURL("image/jpeg", 0.7));
-            }
-        }
-    }
-
-    function login() {
-        let name = document.getElementById('username').value.trim();
-        let phone = document.getElementById('userphone').value.trim();
-        let pass = document.getElementById('userpass').value.trim();
-        
-        if(!name || !phone || !pass) { alert("Лутфан ном, рақам ва рамзи махфиро нависед!"); return; }
-        if(pass.length < 4) { alert("Рамз бояд ҳадди ақал аз 4 аломат иборат бошад!"); return; }
-
-        database.ref('users/' + phone).once('value', (snapshot) => {
-            let serverUser = snapshot.val();
-            if(serverUser) {
-                if(serverUser.password === pass) {
-                    userData = serverUser;
-                    localStorage.setItem('chat_user_data', JSON.stringify(userData));
-                    enterApp();
-                } else {
-                    alert("Ин рақами телефон аллакай сабт шудааст ва рамзи воридкардаи шумо нодуруст аст!");
-                }
-            } else {
-                userData = { name: name, phone: phone, password: pass, img: defaultAvatar };
-                database.ref('users/' + phone).set(userData).then(() => {
-                    localStorage.setItem('chat_user_data', JSON.stringify(userData));
-                    enterApp();
-                });
-            }
-        });
-    }
-
-    function enterApp() {
-        updateProfileUI();
-        document.getElementById('auth-screen').style.display = 'none';
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
-        document.getElementById('home-screen').classList.add('active-screen');
-        listenToUnreadMessages();
-        loadRoomsFromServer();
-    }
-
-    function logout() {
-        if(confirm("Оё мехоҳед аз барнома бароед?")) {
-            localStorage.removeItem('chat_user_data');
-            document.getElementById('username').value = "";
-            document.getElementById('userphone').value = "";
-            document.getElementById('userpass').value = "";
-            document.getElementById('auth-screen').style.display = 'flex';
-        }
-    }
-
-    function updateProfileUI() {
-        document.getElementById('my-profile-info').innerHTML = `
-            <img src="${userData.img || defaultAvatar}" class="profile-avatar-big">
-            <div style="flex: 1; font-size: 15px; color: #2d3748;">
-                <b>Ном:</b> <span>${userData.name}</span><br>
-                <span style="margin-top: 3px; display:inline-block;"><b>Рақам:</b> <span>${userData.phone}</span></span><br>
-                <button class="btn btn-secondary btn-sm" onclick="toggleProfileForm(true)">✏️ Таҳрир</button>
-                <button class="btn btn-danger btn-sm" onclick="logout()" style="margin-left: 5px;">🚪 Баромадан</button>
-            </div>`;
-    }
-
-    function saveProfileChanges() {
-        let newName = document.getElementById('edit-name').value.trim();
-        let newPass = document.getElementById('edit-pass').value.trim();
-        let fileInput = document.getElementById('edit-avatar-file');
-
-        if(!newName || !newPass) { 
-            alert("Лутфан ном ва рамзро холӣ нагузоред!"); 
-            return; 
-        }
-        if(newPass.length < 4) {
-            alert("Рамзи нав бояд ҳадди ақал аз 4 аломат иборат бошад!");
-            return;
-        }
-
-        userData.name = newName;
-        userData.password = newPass;
-
-        let saveFinal = () => {
-            localStorage.setItem('chat_user_data', JSON.stringify(userData));
-            database.ref('users/' + userData.phone).set(userData).then(() => {
-                updateProfileUI();
-                toggleProfileForm(false);
-                alert("Маълумоти профил ва рамзи шумо бомуваффақият нав шуданд!");
-            });
-        }
-
-        if(fileInput.files && fileInput.files[0]) {
-            compressImage(fileInput.files[0], function(compressedUrl) {
-                userData.img = compressedUrl;
-                saveFinal();
-            });
-        } else { saveFinal(); }
-    }
-
-    function switchScreen(screenId, element) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
-        document.getElementById(screenId).classList.add('active-screen');
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        element.classList.add('active');
-        if(screenId === 'chat-screen') { renderActiveChats(); }
-    }
-
-    function toggleProfileForm(show) {
-        let box = document.getElementById('edit-profile-box');
-        if(show) {
-            document.getElementById('edit-name').value = userData.name;
-            document.getElementById('edit-phone').value = userData.phone;
-            document.getElementById('edit-pass').value = userData.password || "";
-            // Ҳангоми кушодани форма навъи майдонро дубора ба "password" мегардонем
-            document.getElementById('edit-pass').type = "password";
-            box.querySelector('.toggle-password').innerText = "👁️";
-            box.style.display = 'block';
-        } else { box.style.display = 'none'; }
-    }
-
-    function toggleRoomForm(show) {
-        let formBox = document.getElementById('room-form-box');
-        let openBtn = document.getElementById('open-form-btn');
-        formBox.style.display = show ? 'block' : 'none';
-        openBtn.style.display = show ? 'none' : 'block';
-    }
-
-    function loadRoomsFromServer() {
-        database.ref('rooms').on('value', (snapshot) => {
-            let rooms = snapshot.val();
-            roomsData = []; 
-            if(rooms) {
-                Object.keys(rooms).forEach(id => {
-                    roomsData.push(rooms[id]);
-                });
-            }
-            renderRoomsUI();
-            checkDeepLink();
-        });
-    }
-
-    function renderRoomsUI() {
-        let myRoomsHTML = ""; 
-        let allRoomsHTML = "";
-
-        roomsData.forEach(room => {
-            if(filterByCreatorPhone && room.creatorPhone !== filterByCreatorPhone) return;
-
-            let lockIcon = room.pass ? "🔒" : "🔓";
-
-            allRoomsHTML += `
-                <div class="item-card" onclick="tryEnterRoom('${room.id}')">
-                    <div class="card-main-info">
-                        <img src="${room.img || defaultAvatar}" class="room-avatar">
-                        <div class="card-info" style="flex:1; margin-left:10px;">
-                            <b>🏢 ${room.name}</b>
-                            <span style="font-size:11px; color:gray; display:block;">Аз: ${room.creatorName}</span>
-                        </div>
-                        <span class="lock-icon">${lockIcon}</span>
+            <!-- Header-и Чат -->
+            <div class="bg-[#f0f2f5] dark:bg-[#202c33] p-3 flex justify-between items-center border-b dark:border-gray-800">
+                <div class="flex items-center gap-3">
+                    <img id="chat-header-avatar" src="https://via.placeholder.com/150" class="w-10 h-10 rounded-full object-cover">
+                    <div>
+                        <h4 id="chat-header-name" class="font-semibold text-gray-800 dark:text-white">Номи Рӯм</h4>
+                        <p id="chat-header-status" class="text-xs text-gray-500 dark:text-gray-400">online</p>
                     </div>
-                </div>`;
+                </div>
+                <div class="flex gap-4 text-gray-600 dark:text-gray-300 text-lg pr-2">
+                    <button onclick="shareRoomLink()"><i class="fas fa-share-alt"></i></button>
+                    <button onclick="toggleAdminPanel()"><i class="fas fa-ellipsis-v"></i></button>
+                </div>
+            </div>
 
-            if(room.creatorPhone === userData.phone) {
-                myRoomsHTML += `
-                    <div class="item-card" id="my-room-${room.id}">
-                        <div class="card-main-info">
-                            <img src="${room.img || defaultAvatar}" class="room-avatar">
-                            <div class="card-info" style="flex:1; margin-left:10px;"><b>🏢 ${room.name}</b></div>
-                            <span class="lock-icon">${lockIcon}</span>
-                        </div>
-                        <div class="room-actions">
-                            <button class="action-btn btn-enter" onclick="tryEnterRoom('${room.id}')">Ворид</button>
-                            <button class="action-btn btn-share" onclick="shareRoom('${room.link}')">Поделиться</button>
-                            <button class="action-btn btn-edit" onclick="editRoom('${room.id}')">Таҳрир</button>
-                            <button class="action-btn btn-delete" onclick="deleteRoom('${room.id}')">Нест кардан</button>
-                        </div>
-                    </div>`;
+            <!-- Мадони Паёмакҳо (Messages Area) -->
+            <div class="flex-1 overflow-y-auto p-6 whatsapp-bg space-y-3" id="messages-container">
+                <!-- Паёмакҳо ин ҷо бор мешаванд -->
+            </div>
+
+            <!-- Нишондиҳандаи Навишта истодааст (Typing Indicator) -->
+            <div id="typing-indicator" class="px-6 py-1 text-xs text-gray-500 italic hidden bg-transparent">
+                касе навишта истодааст...
+            </div>
+
+            <!-- Панели Reply (Агар фаъол бошад) -->
+            <div id="reply-preview" class="hidden bg-gray-200 dark:bg-[#1f2c34] p-2 px-6 flex justify-between items-center border-l-4 border-[#00a884]">
+                <div>
+                    <p class="text-xs text-[#00a884] font-bold" id="reply-user">Ҷавоб ба</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 truncate" id="reply-text">Текст</p>
+                </div>
+                <button onclick="cancelReply()"><i class="fas fa-times text-gray-500"></i></button>
+            </div>
+
+            <!-- Панели Ирсоли Паём -->
+            <div class="bg-[#f0f2f5] dark:bg-[#202c33] p-3 flex items-center gap-3">
+                <button onclick="toggleEmojiPicker()" class="text-gray-600 dark:text-gray-300 text-xl"><i class="far fa-smile"></i></button>
+                <label class="text-gray-600 dark:text-gray-300 text-xl cursor-pointer">
+                    <i class="fas fa-paperclip"></i>
+                    <input type="file" id="file-input" class="hidden" onchange="uploadFile(this)">
+                </label>
+                <input type="text" id="message-input" placeholder="Паём нависед..." class="flex-1 p-2 rounded-lg bg-white dark:bg-[#2a3942] outline-none dark:text-white" oninput="sendTypingStatus()">
+                <button onclick="sendMessage()" class="text-gray-600 dark:text-gray-300 text-xl"><i class="fas fa-paper-plane text-[#00a884]"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ————————————————— MODALS & PANELS ————————————————— -->
+    <!-- Admin Panel (Оинаи танзимоти рӯм) -->
+    <div id="admin-panel" class="fixed right-0 top-0 bottom-0 w-80 bg-white dark:bg-[#111b21] shadow-xl transform translate-x-full transition-transform duration-300 z-30 p-4 border-l dark:border-gray-800">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="font-bold text-lg dark:text-white">Идоракунии Рӯм</h3>
+            <button onclick="toggleAdminPanel()"><i class="fas fa-times dark:text-white"></i></button>
+        </div>
+        <div class="space-y-4">
+            <button onclick="deleteRoom()" class="w-full text-left p-2 bg-red-100 text-red-600 rounded flex items-center gap-2"><i class="fas fa-trash"></i> Нест кардани Рӯм</button>
+            <div class="border-t pt-4">
+                <h4 class="font-semibold text-sm mb-2 dark:text-gray-300">Иштирокчиён:</h4>
+                <div id="room-members-list" class="space-y-2 text-sm dark:text-white">
+                    <!-- Рӯйхати аъзоён бо тугмаҳои Ban/Mute -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модали Профил -->
+    <div id="profile-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white dark:bg-[#222e35] p-6 rounded-lg max-w-sm w-full text-center">
+            <h3 class="text-xl font-bold mb-4 dark:text-white">Профили Корбар</h3>
+            <input type="text" id="profile-name-input" class="w-full p-2 border rounded mb-3 dark:bg-[#2a3942] dark:text-white" placeholder="Номи Шумо">
+            <div class="flex justify-end gap-2">
+                <button onclick="toggleProfileModal()" class="px-4 py-2 bg-gray-300 rounded text-sm">Бастан</button>
+                <button onclick="saveProfile()" class="px-4 py-2 bg-[#00a884] text-white rounded text-sm">Ҳифз кардан</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ————————————————— FIREBASE SDK INTEGRATION ————————————————— -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+        import { getDatabase, ref, set, push, onValue, update, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+        import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-storage.js";
+
+        // Танзимоти Firebase-и худро дар ин ҷо гузоред:
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        const storage = getStorage(app);
+
+        let currentUser = null;
+        let activeRoomId = null;
+        let replyToMessageId = null;
+
+        // Вуруд ва Бақайдгирӣ
+        window.handleLogin = () => {
+            const email = document.getElementById('auth-email').value;
+            const pass = document.getElementById('auth-password').value;
+            signInWithEmailAndPassword(auth, email, pass).catch(err => alert(err.message));
+        };
+
+        window.handleRegister = () => {
+            const email = document.getElementById('auth-email').value;
+            const pass = document.getElementById('auth-password').value;
+            createUserWithEmailAndPassword(auth, email, pass).then(cred => {
+                set(ref(db, 'users/' + cred.user.uid), {
+                    uid: cred.user.uid,
+                    name: email.split('@')[0],
+                    email: email,
+                    status: "online",
+                    lastSeen: serverTimestamp()
+                });
+            }).catch(err => alert(err.message));
+        };
+
+        window.handleLogout = () => signOut(auth);
+
+        // Назорати Ҳолати Корбар (Auth State)
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('main-interface').classList.remove('hidden');
+                
+                // Боркунии маълумоти ман
+                onValue(ref(db, 'users/' + user.uid), snapshot => {
+                    const data = snapshot.val();
+                    if(data) {
+                        document.getElementById('my-name').innerText = data.name;
+                        document.getElementById('my-avatar').src = data.avatar || "https://via.placeholder.com/150";
+                    }
+                });
+
+                // Навсозии статус ба Online
+                update(ref(db, 'users/' + user.uid), { status: "online" });
+                
+                loadRooms();
+            } else {
+                document.getElementById('auth-screen').classList.remove('hidden');
+                document.getElementById('main-interface').classList.add('hidden');
             }
         });
 
-        document.getElementById('my-rooms-list').innerHTML = myRoomsHTML || "<p style='color:gray; font-size:14px;'>Комнатаҳои сохтаи шумо нест.</p>";
-        document.getElementById('all-rooms-list').innerHTML = allRoomsHTML || "<p style='color:gray; font-size:14px;'>Ҳеҷ комнатае мавҷуд нест.</p>";
-    }
-
-    function searchFunction() {
-        let input = document.getElementById('search-input').value.trim();
-        let userResultBox = document.getElementById('search-user-result');
-        
-        if(!input) {
-            userResultBox.innerHTML = "";
-            let cards = document.getElementById('all-rooms-list').getElementsByClassName('item-card');
-            for (let i = 0; i < cards.length; i++) { cards[i].style.display = "flex"; }
-            return;
-        }
-
-        if(/^\d+$/.test(input)) {
-            database.ref('users/' + input).once('value', (snapshot) => {
-                let searchedUser = snapshot.val();
-                if(snapshot.exists()) {
-                    userResultBox.innerHTML = `
-                        <div class="searched-user-box" onclick="filterRoomsByUser('${searchedUser.phone}', '${searchedUser.name}')">
-                            <img src="${searchedUser.img || defaultAvatar}" class="room-avatar">
-                            <div style="flex:1;">
-                                <b style="color:#1e1b4b;">👤 ${searchedUser.name}</b>
-                                <span style="display:block; font-size:12px; color:#4f46e5;">Рақам: ${searchedUser.phone} (Барои дидани комнатаҳо клик кунед)</span>
-                            </div>
-                        </div>`;
-                } else {
-                    userResultBox.innerHTML = "<p style='color:gray; font-size:13px; margin-bottom:10px;'>Бо ин рақам ягон профил ёфт нашуд.</p>";
-                }
-            });
-        } else {
-            userResultBox.innerHTML = "";
-            let cards = document.getElementById('all-rooms-list').getElementsByClassName('item-card');
-            for (let i = 0; i < cards.length; i++) {
-                cards[i].style.display = cards[i].innerText.toLowerCase().includes(input.toLowerCase()) ? "flex" : "none";
-            }
-        }
-    }
-
-    function filterRoomsByUser(phone, name) {
-        filterByCreatorPhone = phone;
-        document.getElementById('rooms-list-title').innerText = `🏢 Комнатаҳои ${name}`;
-        document.getElementById('reset-filter-btn').style.display = "inline-block";
-        document.getElementById('search-input').value = "";
-        document.getElementById('search-user-result').innerHTML = "";
-        renderRoomsUI();
-    }
-
-    function resetRoomFilter() {
-        filterByCreatorPhone = "";
-        document.getElementById('rooms-list-title').innerText = "🏢 Ҳамаи Комнатаҳо";
-        document.getElementById('reset-filter-btn').style.display = "none";
-        renderRoomsUI();
-    }
-
-    function createRoom() {
-        let name = document.getElementById('room-name').value.trim();
-        let pass = document.getElementById('room-pass').value.trim();
-        let fileInput = document.getElementById('room-icon');
-
-        if(name) {
-            let roomId = "room_" + Date.now();
-            let generateLink = window.location.origin + window.location.pathname + "?room=" + roomId;
-
-            let saveToFirebase = (url) => {
-                database.ref('rooms/' + roomId).set({
-                    id: roomId, name: name, pass: pass, img: url, link: generateLink,
-                    creatorPhone: userData.phone, creatorName: userData.name
-                }).then(() => {
-                    document.getElementById('room-name').value = '';
-                    document.getElementById('room-pass').value = '';
-                    document.getElementById('room-icon').value = '';
-                    toggleRoomForm(false);
-                    alert("Комната сохта шуд!");
-                }).catch((error) => {
-                    alert("Хатогӣ ҳангоми сохтан: " + error.message);
+        // Боркунии Рӯмҳо ва Чатҳо
+        function loadRooms() {
+            onValue(ref(db, 'rooms'), snapshot => {
+                const listContainer = document.getElementById('rooms-list');
+                listContainer.innerHTML = '';
+                snapshot.forEach(child => {
+                    const room = child.val();
+                    const div = document.createElement('div');
+                    div.className = "flex items-center gap-3 p-3 border-b dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-[#202c33] cursor-pointer";
+                    div.onclick = () => selectRoom(child.key, room.name, room.avatar);
+                    div.innerHTML = `
+                        <img src="${room.avatar || 'https://via.placeholder.com/150'}" class="w-12 h-12 rounded-full object-cover">
+                        <div class="flex-1">
+                            <div class="flex justify-between"><h5 class="font-semibold text-gray-800 dark:text-white">${room.name}</h5></div>
+                            <p class="text-xs text-gray-500 truncate">Барои кушодани чат пахш кунед</p>
+                        </div>
+                    `;
+                    listContainer.appendChild(div);
                 });
+            });
+        }
+
+        // Интихоби Рӯм
+        function selectRoom(roomId, roomName, roomAvatar) {
+            activeRoomId = roomId;
+            document.getElementById('no-chat-selected').classList.add('hidden');
+            document.getElementById('chat-header-name').innerText = roomName;
+            document.getElementById('chat-header-avatar').src = roomAvatar || 'https://via.placeholder.com/150';
+            loadMessages(roomId);
+            listenToTyping(roomId);
+        }
+
+        // Ирсоли Паём
+        window.sendMessage = () => {
+            const text = document.getElementById('message-input').value;
+            if(!text.trim() || !activeRoomId) return;
+
+            const msgData = {
+                senderId: currentUser.uid,
+                senderName: document.getElementById('my-name').innerText,
+                text: text,
+                timestamp: serverTimestamp(),
+                seen: false
             };
 
-            if(fileInput.files && fileInput.files[0]) {
-                compressImage(fileInput.files[0], function(compressedUrl) { saveToFirebase(compressedUrl); });
-            } else { 
-                saveToFirebase(defaultAvatar); 
+            if(replyToMessageId) {
+                msgData.replyTo = replyToMessageId;
+                cancelReply();
             }
-        } else {
-            alert("Лутфан номи комнатаро нависед!");
-        }
-    }
 
-    function tryEnterRoom(roomId) {
-        let room = roomsData.find(r => r.id === roomId);
-        if(room) {
-            if(room.pass) {
-                let userPass = prompt(`Ин комната қулф аст 🔒. Рамзро ворид кунед:`);
-                if(userPass === room.pass) { openChat(room.name, room.img, room.id); } 
-                else if(userPass !== null) { alert("Рамз нодуруст аст!"); }
-            } else { openChat(room.name, room.img, room.id); }
-        } else {
-            alert("Комната ёфт нашуд ё нест карда шудааст!");
-        }
-    }
-
-    function openChat(title, img, roomId) {
-        currentChatRoomId = roomId;
-        document.getElementById('chat-title').innerText = title;
-        document.getElementById('chat-window').style.display = 'flex';
-        
-        database.ref('messages/' + roomId).off();
-        database.ref('messages/' + roomId).on('value', (snapshot) => {
-            let messages = snapshot.val();
-            let msgList = document.getElementById('chat-messages-list');
-            msgList.innerHTML = `<div style="text-align:center; color:gray; font-size:12px; width:100%; margin-bottom:5px;">Хуш омадед ба ${title}!</div>`;
-            
-            if(messages) {
-                Object.keys(messages).forEach(msgKey => {
-                    let msg = messages[msgKey];
-                    let isMe = msg.phone === userData.phone;
-                    let alignmentClass = isMe ? "me" : "other";
-                    
-                    let deleteButtonHTML = isMe ? `<button class="delete-btn" onclick="deleteSingleMessage('${msgKey}')">🗑️ Нест кардан</button>` : "";
-                    
-                    msgList.innerHTML += `
-                        <div class="msg-wrapper ${alignmentClass}">
-                            <img src="${msg.userImg || defaultAvatar}" class="msg-avatar">
-                            <div class="msg-body">
-                                <span class="msg-username">${isMe ? "Шумо" : msg.username}</span>
-                                <div class="msg-text">${msg.text}</div>
-                                ${deleteButtonHTML}
-                            </div>
-                        </div>`;
-                });
-                setTimeout(() => {
-                    msgList.scrollTop = msgList.scrollHeight;
-                }, 50);
-            }
-        });
-    }
-
-    function closeChat() { document.getElementById('chat-window').style.display = 'none'; database.ref('messages/' + currentChatRoomId).off(); }
-
-    function sendMessage() {
-        let text = document.getElementById('message-input').value.trim();
-        if(text && currentChatRoomId) {
-            let msgId = "msg_" + Date.now();
-            database.ref('messages/' + currentChatRoomId + '/' + msgId).set({
-                username: userData.name, phone: userData.phone, text: text, userImg: userData.img, timestamp: Date.now()
-            });
+            push(ref(db, `messages/${activeRoomId}`), msgData);
             document.getElementById('message-input').value = '';
-        }
-    }
+            // Қатъи ҳолати typing пас аз ирсол
+            set(ref(db, `typing/${activeRoomId}/${currentUser.uid}`), null);
+        };
 
-    function deleteSingleMessage(msgKey) {
-        if(confirm("Оё мехоҳед ин паёмро нест кунед?")) {
-            database.ref('messages/' + currentChatRoomId + '/' + msgKey).remove();
+        // Боркунии Паёмакҳо (WhatsApp Стил)
+        function loadMessages(roomId) {
+            onValue(ref(db, `messages/${roomId}`), snapshot => {
+                const container = document.getElementById('messages-container');
+                container.innerHTML = '';
+                snapshot.forEach(child => {
+                    const msg = child.val();
+                    const isMe = msg.senderId === currentUser.uid;
+                    
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = `flex ${isMe ? 'justify-end' : 'justify-start'} w-full mb-1`;
+                    
+                    msgDiv.innerHTML = `
+                        <div class="max-w-xs md:max-w-md p-2 shadow-sm relative ${isMe ? 'message-out' : 'message-in'}">
+                            ${msg.replyTo ? `<div class="bg-black bg-opacity-5 p-1 border-l-4 border-emerald-500 text-xs mb-1 rounded">Иқтибос (Reply)</div>` : ''}
+                            <p class="text-sm pr-12">${msg.text}</p>
+                            <span class="absolute bottom-1 right-2 text-[10px] text-gray-500 flex items-center gap-1">
+                                ${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                ${isMe ? '<i class="fas fa-check-double text-blue-500"></i>' : ''}
+                            </span>
+                        </div>
+                    `;
+                    container.appendChild(msgDiv);
+                });
+                container.scrollTop = container.scrollHeight;
+            });
         }
-    }
 
-    function listenToUnreadMessages() {
-        database.ref('messages').on('value', (snapshot) => {
-            let allMessages = snapshot.val(); if(!allMessages) return;
-            activeChats = [];
-            Object.keys(allMessages).forEach(roomId => {
-                let room = roomsData.find(r => r.id === roomId); if(!room) return;
-                let messagesArray = Object.values(allMessages[roomId]);
-                if(messagesArray.length === 0) return;
-                let lastMessage = messagesArray[messagesArray.length - 1];
-                activeChats.push({
-                    id: roomId, title: room.name, lastMsg: lastMessage.text, lastUser: lastMessage.username, img: room.img, unread: lastMessage.phone !== userData.phone
+        // Навишта истодааст... (Typing Indicator)
+        window.sendTypingStatus = () => {
+            if(!activeRoomId) return;
+            set(ref(db, `typing/${activeRoomId}/${currentUser.uid}`), true);
+            setTimeout(() => {
+                set(ref(db, `typing/${activeRoomId}/${currentUser.uid}`), null);
+            }, 3000);
+        };
+
+        function listenToTyping(roomId) {
+            onValue(ref(db, `typing/${roomId}`), snapshot => {
+                const ind = document.getElementById('typing-indicator');
+                if(snapshot.exists()) {
+                    ind.classList.remove('hidden');
+                } else {
+                    ind.classList.add('hidden');
+                }
+            });
+        }
+
+        // Dark Mode
+        window.toggleDarkMode = () => {
+            const body = document.getElementById('app-body');
+            body.classList.toggle('dark');
+            const icon = document.getElementById('dark-icon');
+            icon.className = body.classList.contains('dark') ? "fas fa-sun text-yellow-400" : "fas fa-moon";
+        };
+
+        // Файли Медиа (Storage)
+        window.uploadFile = (input) => {
+            if(!input.files[0] || !activeRoomId) return;
+            const file = input.files[0];
+            const fileRef = sRef(storage, `chats/${activeRoomId}/${Date.now()}_${file.name}`);
+            uploadBytes(fileRef, file).then(() => {
+                getDownloadURL(fileRef).then(url => {
+                    push(ref(db, `messages/${activeRoomId}`), {
+                        senderId: currentUser.uid,
+                        senderName: document.getElementById('my-name').innerText,
+                        text: `📁 Файл: ${url}`,
+                        timestamp: serverTimestamp()
+                    });
                 });
             });
-            if(document.getElementById('chat-screen').classList.contains('active-screen')) renderActiveChats();
-        });
-    }
+        };
 
-    function renderActiveChats() {
-        let container = document.getElementById('active-chats-list'); container.innerHTML = activeChats.length ? "" : "<p style='color:gray; text-align:center;'>Чатҳо нест.</p>";
-        activeChats.forEach(chat => {
-            container.innerHTML += `
-                <div class="item-card" onclick="openChat('${chat.title}', '${chat.img}', '${chat.id}')">
-                    <div class="card-main-info">
-                        <img src="${chat.img || defaultAvatar}" class="room-avatar">
-                        <div class="card-info" style="flex:1; margin-left:10px;"><b>💬 ${chat.title}</b><br><small>${chat.lastUser}: ${chat.lastMsg}</small></div>
-                    </div>
-                </div>`;
-        });
-    }
+        // Панели Идоракунӣ ва Модалҳо
+        window.toggleAdminPanel = () => document.getElementById('admin-panel').classList.toggle('translate-x-full');
+        window.toggleProfileModal = () => document.getElementById('profile-modal').classList.toggle('hidden');
+        
+        window.saveProfile = () => {
+            const newName = document.getElementById('profile-name-input').value;
+            if(newName.trim()) {
+                update(ref(db, 'users/' + currentUser.uid), { name: newName });
+                toggleProfileModal();
+            }
+        };
 
-    function shareRoom(link) { navigator.clipboard.writeText(link).then(() => { alert("🔗 Ссылка нусхабардорӣ шуд!"); }); }
-    function editRoom(id) { let room = roomsData.find(r => r.id === id); if(room) { let n = prompt("Номи нав:", room.name); if(n) database.ref('rooms/' + id).update({ name: n }); } }
-    function deleteRoom(id) { if(confirm("Нест карда шавад?")) { database.ref('rooms/' + id).remove(); database.ref('messages/' + id).remove(); } }
-</script>
+        window.shareRoomLink = () => {
+            if(!activeRoomId) return;
+            navigator.clipboard.writeText(window.location.href + "?room=" + activeRoomId);
+            alert("Истиноди рӯм нусхабардорӣ шуд!");
+        };
+
+        window.cancelReply = () => {
+            replyToMessageId = null;
+            document.getElementById('reply-preview').classList.add('hidden');
+        };
+    </script>
 </body>
 </html>
