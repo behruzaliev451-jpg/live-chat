@@ -233,7 +233,6 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSy...",
@@ -260,6 +259,7 @@
     const msgNotificationSound = new Audio("https://raw.githubusercontent.com/behruzaliev451-jpg/live-chat/main/chat.mp3");
 
     let isInitialLoadMessages = true;
+    let localUnreadCounts = {}; // Барои нигоҳ доштани шумораи паёмҳои хонданашудаи ҳар як комната
 
     window.onload = function() {
         document.getElementById('message-input').addEventListener('keydown', function(e) {
@@ -334,42 +334,40 @@
         }
     }
 
-function login() {
-    let name = document.getElementById('username').value.trim();
-    let phone = document.getElementById('userphone').value.trim();
-    let pass = document.getElementById('userpass').value.trim();
-     
-    if(!name || !phone || !pass) { alert("Лутфан ном, рақам ва рамзи махфиро нависед!"); return; }
-    if(pass.length < 4) { alert("Рамз бояд ҳадди ақал аз 4 аломат иборат бошад!"); return; }
+    function login() {
+        let name = document.getElementById('username').value.trim();
+        let phone = document.getElementById('userphone').value.trim();
+        let pass = document.getElementById('userpass').value.trim();
+         
+        if(!name || !phone || !pass) { alert("Лутфан ном, рақам ва рамзи махфиро нависед!"); return; }
+        if(pass.length < 4) { alert("Рамз бояд ҳадди ақал аз 4 аломат иборат бошад!"); return; }
 
-    // АКТИВИРАТ КАРДАНИ САДО: Браузер ба хотир мегирад, ки корбар тугмаро пахш кард
-    // Садоро як бор ба таври хомӯш менавозем, то "қулф"-и браузер кушода шавад
-    msgNotificationSound.play().then(() => {
-        msgNotificationSound.pause();
-        msgNotificationSound.currentTime = 0;
-    }).catch(e => console.log("Иҷозати аввалияи садо:", e));
+        // АКТИВИРАТ КАРДАНИ САДО
+        msgNotificationSound.play().then(() => {
+            msgNotificationSound.pause();
+            msgNotificationSound.currentTime = 0;
+        }).catch(e => console.log("Иҷозати аввалияи садо:", e));
 
-    database.ref('users/' + phone).once('value', (snapshot) => {
-        let serverUser = snapshot.val();
-        if(serverUser) {
-            if(serverUser.password === pass) {
-                userData = serverUser;
-                if(!userData.followedGroups) userData.followedGroups = {};
-                localStorage.setItem('chat_user_data', JSON.stringify(userData));
-                enterApp();
+        database.ref('users/' + phone).once('value', (snapshot) => {
+            let serverUser = snapshot.val();
+            if(serverUser) {
+                if(serverUser.password === pass) {
+                    userData = serverUser;
+                    if(!userData.followedGroups) userData.followedGroups = {};
+                    localStorage.setItem('chat_user_data', JSON.stringify(userData));
+                    enterApp();
+                } else {
+                    alert("Ин рақами телефон аллакай сабт шудааст ва рамзи воридкардаи шумо нодуруст аст!");
+                }
             } else {
-                alert("Ин рақами телефон аллакай сабт шудааст ва рамзи воридкардаи шумо нодуруст аст!");
+                userData = { name: name, phone: phone, password: pass, img: defaultAvatar, followedGroups: {} };
+                database.ref('users/' + phone).set(userData).then(() => {
+                    localStorage.setItem('chat_user_data', JSON.stringify(userData));
+                    enterApp();
+                });
             }
-        } else {
-            userData = { name: name, phone: phone, password: pass, img: defaultAvatar, followedGroups: {} };
-            database.ref('users/' + phone).set(userData).then(() => {
-                localStorage.setItem('chat_user_data', JSON.stringify(userData));
-                enterApp();
-            });
-        }
-    });
-}
-
+        });
+    }
 
     function enterApp() {
         updateProfileUI();
@@ -437,12 +435,10 @@ function login() {
         if(screenId === 'chat-screen') { renderActiveChats(); }
     }
 
-    // НАВШУДА: Рендери комнатаҳо ва гурӯҳҳои сохтаи худи корбар дар асоси таби интихобшуда
     function renderActiveChats() {
         let listBox = document.getElementById('active-chats-list');
         listBox.innerHTML = "";
         
-        // Филтр танҳо барои он объектҳое, ки корбари ҷорӣ сохтааст
         let myFilteredItems = roomsData.filter(r => r.creatorPhone === userData.phone && (r.roomOrGroup || 'room') === chatActiveTab);
         
         if(myFilteredItems.length === 0) {
@@ -682,6 +678,10 @@ function login() {
             if(clientPass !== room.pass) { alert("Рамз нодуруст аст!"); return; }
         }
 
+        // Тоза кардани нишони сурхи огоҳиномаи хонданашуда ҳангоми ворид шудан
+        localUnreadCounts[roomId] = 0;
+        updateTotalBadgeUI();
+
         document.getElementById('chat-title').innerText = room.name;
         document.getElementById('chat-window').style.display = 'flex';
 
@@ -737,7 +737,8 @@ function login() {
             text: txt,
             senderPhone: userData.phone,
             senderName: userData.name,
-            senderImg: userData.img || defaultAvatar
+            senderImg: userData.img || defaultAvatar,
+            status: 'unread' // Барои пайгирии паёмҳои нав
         };
 
         database.ref('messages/' + currentChatRoomId + '/' + msgId).set(msgObj).then(() => {
@@ -752,17 +753,13 @@ function login() {
     }
 
     function closeChat() {
-        if(currentChatRoomId) database.ref('messages/' + currentChatRoomId).off();
+        if(currentChatRoomId) {
+            database.ref('messages/' + currentChatRoomId).off();
+            localUnreadCounts[currentChatRoomId] = 0;
+            updateTotalBadgeUI();
+        }
         document.getElementById('chat-window').style.display = 'none';
-    }
-
-    function listenToAllMessagesForNotifications() {
-        database.ref('messages').on('child_added', (snapshot) => {
-            if(!isInitialLoadMessages) {
-                msgNotificationSound.play().catch(e => console.log("Садо пахш нашуд"));
-            }
-        });
-        setTimeout(() => { isInitialLoadMessages = false; }, 2000);
+        currentChatRoomId = "";
     }
 
     function shareRoom(link) {
@@ -773,41 +770,95 @@ function login() {
             alert("Линки ҳуҷра мавҷуд нест.");
         }
     }
-	function listenToAllMessagesForNotifications() {
-    // Гӯш кардани паёмҳо аз ҳамаи комнатаҳо
-    database.ref('messages').on('child_changed', (snapshot) => {
-        handleIncomingSnapshot(snapshot);
-    });
-    
-    database.ref('messages').on('child_added', (snapshot) => {
-        handleIncomingSnapshot(snapshot);
-    });
-}
 
-function handleIncomingSnapshot(snapshot) {
-    let roomId = snapshot.key;
-    
-    // Агар корбар ҳозир дар ҳамин комната бошад, огоҳиномаи беруна лозим нест
-    if (currentChatRoomId === roomId) return;
+    // МАНТИҚИ НАВӢ ОГОҲИНОМАҲО ВА ҲИСОБКУНАК
+    function listenToAllMessagesForNotifications() {
+        // Боркунии аввалия барои паёмҳои хонданашуда
+        database.ref('messages').once('value', (snapshot) => {
+            let allMsgs = snapshot.val();
+            if (allMsgs) {
+                Object.keys(allMsgs).forEach(roomId => {
+                    if (currentChatRoomId === roomId) return;
+                    Object.keys(allMsgs[roomId]).forEach(msgId => {
+                        let msg = allMsgs[roomId][msgId];
+                        if (msg.senderPhone !== userData.phone && msg.status !== 'read') {
+                            localUnreadCounts[roomId] = (localUnreadCounts[roomId] || 0) + 1;
+                        }
+                    });
+                });
+                updateTotalBadgeUI();
+            }
 
-    // Ёфтани номи комната аз рӯи ID
-    let room = roomsData.find(r => r.id === roomId);
-    let roomName = room ? room.name : "Номаълум";
+            // Иҷозат додани пахши садо баъди боркунии кӯҳнаҳо
+            setTimeout(() => { isInitialLoadMessages = false; }, 1500);
 
-    // Гирифтани паёми охирин
-    snapshot.ref.limitToLast(1).once('value', (msgSnap) => {
-        let msgs = msgSnap.val();
-        if (msgs) {
-            let lastMsgKey = Object.keys(msgs)[0];
-            let lastMsg = msgs[lastMsgKey];
+            // Пайгирии паёмҳои нав дар реҷаи Live
+            database.ref('messages').on('child_changed', (snapshot) => {
+                handleIncomingSnapshot(snapshot);
+            });
+            
+            database.ref('messages').on('child_added', (snapshot) => {
+                handleIncomingSnapshot(snapshot);
+            });
+        });
+    }
 
-            // Агар паёмак аз худи мо набошад, огоҳинома медиҳем
-            if (lastMsg && lastMsg.phone !== userData.phone) {
-                triggerIncomingMessageNotification(roomName);
+    function handleIncomingSnapshot(snapshot) {
+        let roomId = snapshot.key;
+        if (currentChatRoomId === roomId) return;
+
+        let room = roomsData.find(r => r.id === roomId);
+        let roomName = room ? room.name : "Комнатаи нав";
+
+        snapshot.ref.limitToLast(1).once('value', (msgSnap) => {
+            let msgs = msgSnap.val();
+            if (msgs) {
+                let lastMsgKey = Object.keys(msgs)[0];
+                let lastMsg = msgs[lastMsgKey];
+
+                if (lastMsg && lastMsg.senderPhone !== userData.phone) {
+                    // Афзоиши ҳисобкунаки маҳаллӣ
+                    if (!isInitialLoadMessages) {
+                        localUnreadCounts[roomId] = (localUnreadCounts[roomId] || 0) + 1;
+                        updateTotalBadgeUI();
+                        triggerIncomingMessageNotification(roomName);
+                    }
+                }
+            }
+        });
+    }
+
+    function triggerIncomingMessageNotification(roomName) {
+        msgNotificationSound.play().catch(e => console.log("Хатогии садо:", e));
+
+        let notifBar = document.getElementById('top-notification-bar');
+        let notifName = document.getElementById('notif-room-name');
+        
+        if (notifBar && notifName) {
+            notifName.innerText = roomName;
+            notifBar.style.display = 'block';
+            setTimeout(() => {
+                notifBar.style.display = 'none';
+            }, 3000);
+        }
+    }
+
+    function updateTotalBadgeUI() {
+        let totalUnread = 0;
+        Object.keys(localUnreadCounts).forEach(id => {
+            totalUnread += localUnreadCounts[id];
+        });
+
+        let badge = document.getElementById('total-unread-badge');
+        if (badge) {
+            if (totalUnread > 0) {
+                badge.innerText = totalUnread;
+                badge.style.display = 'block';
+            } else {
+                badge.style.display = 'none';
             }
         }
-    });
-}
+    }
 </script>
 </body>
 </html>
