@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Barsnomai Chat</title>
+    <title>Чат бо Тартиби Автоматӣ</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: #f5f7fb; display: flex; justify-content: center; align-items: center; height: 100vh; height: 100dvh; overflow: hidden; }
@@ -20,9 +20,9 @@
         .back-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
         .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
         
-        /* САНА (ЧИСЛО) ДАР БАЙНИ ЧАТ */
-        .date-divider { text-align: center; margin: 15px 0; position: relative; display: flex; align-items: center; justify-content: center; }
-        .date-divider span { background: rgba(0, 0, 0, 0.06); color: #555; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+        /* ХАТИ САНА (ЧИСЛО) ДАР БАЙНИ ЧАТ */
+        .date-divider { text-align: center; margin: 15px 0; position: relative; display: flex; align-items: center; justify-content: center; width: 100%; }
+        .date-divider span { background: rgba(0, 0, 0, 0.08); color: #555; padding: 4px 14px; border-radius: 12px; font-size: 12px; font-weight: 500; }
 
         .msg-wrapper { display: flex; gap: 10px; width: 100%; max-width: 85%; margin-bottom: 2px; }
         .msg-wrapper.me { align-self: flex-end; flex-direction: row-reverse; }
@@ -89,6 +89,7 @@
 
 <div class="phone-container">
 
+    <!-- ЭКРАНИ АУТЕНТИФИКАЦИЯ -->
     <div id="auth-screen">
         <div class="auth-form">
             <h2 style="margin-bottom: 10px;">Воридшавӣ / Сабти ном</h2>
@@ -102,6 +103,7 @@
         </div>
     </div>
 
+    <!-- ТУХФАИ ЧАТ (ТИРЕЗАИ АСОСИИ СУҲБАТ) -->
     <div id="chat-window">
         <div class="chat-header">
             <button class="back-btn" onclick="closeChat()">←</button>
@@ -114,6 +116,7 @@
         </div>
     </div>
 
+    <!-- ЭКРАНИ АСОСӢ (ГЛАВНЫЙ) -->
     <div id="home-screen" class="screen">
         <input type="text" id="search-input" onkeyup="searchFunction()" placeholder="🔍 Ҷустуҷӯ бо номи комната ё рақам...">
         <div id="search-user-result"></div>
@@ -124,11 +127,13 @@
         <div id="all-rooms-list"></div>
     </div>
 
+    <!-- ЭКРАНИ ЧАТҲОИ ФАЪОЛ -->
     <div id="chat-screen" class="screen">
         <h3 style="margin-bottom: 10px;">💬 Чатҳои фаъол</h3>
         <div id="active-chats-list"></div>
     </div>
 
+    <!-- ЭКРАНИ ПРОФИЛ -->
     <div id="profile-screen" class="screen">
         <h3 style="margin-bottom: 10px;">👤 Профили ман</h3>
         <div class="user-profile-box" id="my-profile-info"></div>
@@ -168,6 +173,7 @@
         <div id="my-rooms-list"></div>
     </div>
 
+    <!-- МЕНЮИ ПОЁН (NAVIGATION) -->
     <div class="bottom-nav">
         <button class="nav-item active" onclick="switchScreen('home-screen', this)">
             <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Главни
@@ -181,10 +187,12 @@
     </div>
 </div>
 
+<!-- FIREBASE SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
 <script>
+    // Танзимоти Firebase (Ин ҷоро бо маълумоти худатон иваз кунед)
     const firebaseConfig = {
         apiKey: "AIzaSy...",
         authDomain: "my-live-chat-ca902.firebaseapp.com",
@@ -493,7 +501,7 @@
         }
     }
 
-    // ФУНКСИЯҲОИ ЁРИДИҲАНДА БАРОИ ВАҚТ ВА САНА (ЧИСЛО)
+    // ФУНКСИЯҲОИ ФОРМАТИ ВАҚТ ВА САНА
     function formatTime(timestamp) {
         let date = new Date(timestamp);
         let hours = String(date.getHours()).padStart(2, '0');
@@ -513,7 +521,7 @@
         return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
     }
 
-    // ИСЛОҲ ШУД: КУШОДАНИ ЧАТ БО САНА, ВАҚТ ВА ТАРТИБИ АВТОМАТӢ
+    // АСОСӢ: КУШОДАНИ ЧАТ БО ТАРТИБИ ХРОНОЛОГӢ, ЧИСЛО ВА ИКОНАИ 🗑️
     function openChat(title, img, roomId) {
         currentChatRoomId = roomId;
         document.getElementById('chat-title').innerText = title;
@@ -530,27 +538,30 @@
             msgList.innerHTML = "";
             
             if(messages) {
-                // Ислоҳ шуд: Паёмҳоро ба массив мегирем ва аз рӯи timestamp (автоматӣ) тартиб медиҳем
+                // 1. Паёмҳоро ба массив мегирем
                 let sortedMessages = [];
                 Object.keys(messages).forEach(key => {
                     sortedMessages.push({ id: key, ...messages[key] });
                 });
+                
+                // 2. АВТОМАТӢ АЗ РӮИ ВАҚТ (TIMESTAMP) ТАРТИБ МЕДИҲЕМ (Аз кӯҳна ба нав)
                 sortedMessages.sort((a, b) => a.timestamp - b.timestamp);
 
                 let lastDateString = "";
 
+                // 3. Рендери паёмҳо дар чат
                 sortedMessages.forEach(msg => {
                     let isMe = msg.phone === userData.phone;
                     let alignmentClass = isMe ? "me" : "other";
                     
-                    // Санҷиши сана барои сохтани хати "Число"
+                    // Санҷиш ва сохтани хати Сана (Число)
                     let currentDateString = formatDateDivider(msg.timestamp);
                     if (currentDateString !== lastDateString) {
                         msgList.innerHTML += `<div class="date-divider"><span>${currentDateString}</span></div>`;
                         lastDateString = currentDateString;
                     }
 
-                    // Иконаи нест кардан танҳо барои паёмҳои худи корбар
+                    // Иконаи нест кардан (танҳо барои паёмҳои худи ман)
                     let deleteButtonHTML = isMe ? `<button class="delete-btn" onclick="deleteSingleMessage('${msg.id}')" title="Нест кардан">🗑️</button>` : "";
                     let timeHTML = formatTime(msg.timestamp);
                     
@@ -567,6 +578,7 @@
                             </div>
                         </div>`;
                 });
+                // Автоматӣ ба поёни чат кашондан
                 msgList.scrollTop = msgList.scrollHeight;
             }
         });
@@ -583,7 +595,11 @@
         if(text && currentChatRoomId) {
             let msgId = "msg_" + Date.now();
             database.ref('messages/' + currentChatRoomId + '/' + msgId).set({
-                username: userData.name, phone: userData.phone, text: text, userImg: userData.img, timestamp: Date.now()
+                username: userData.name, 
+                phone: userData.phone, 
+                text: text, 
+                userImg: userData.img, 
+                timestamp: Date.now() // Вақти дақиқи фиристодан ба сервер
             }).then(() => {
                 inp.value = '';
                 inp.style.height = "40px";
@@ -591,6 +607,7 @@
         }
     }
 
+    // ФУНКСИЯИ НЕСТ КАРДАНИ ПАЁМ БО ИКОНАИ 🗑️
     function deleteSingleMessage(msgKey) {
         if(confirm("Оё мехоҳед ин паёмро нест кунед?")) {
             database.ref('messages/' + currentChatRoomId + '/' + msgKey).remove();
