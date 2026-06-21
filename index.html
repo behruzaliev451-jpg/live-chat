@@ -59,7 +59,6 @@
         .create-room-box, .edit-profile-box { display: none; background: white; padding: 15px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-top: 10px; animation: slideDown 0.2s ease-in-out; }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Дизайни рамкаи комната ва гурӯҳ бо 3 нуқта дар тарафи рост */
         .item-card { background: white; padding: 14px; margin-bottom: 12px; border-radius: 14px; border-left: 5px solid #667eea; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 10px; cursor: pointer; position: relative; }
         .card-main-info { display: flex; align-items: center; width: 100%; justify-content: space-between; position: relative; }
         .card-info { display: flex; flex-direction: column; gap: 3px; max-width: 55%; }
@@ -67,9 +66,9 @@
         .profile-avatar-big { width: 65px; height: 65px; border-radius: 50%; background: #e2e8f0; object-fit: cover; }
         .lock-icon { font-size: 16px; margin-left: auto; margin-right: 8px; }
 
-        /* Тугмаи 3 нуқта дар рӯи рамкаҳо */
-        .card-more-btn { background: none; border: none; font-size: 20px; color: #a0aec0; cursor: pointer; padding: 0 8px; outline: none; }
-        .card-context-menu { position: absolute; right: 10px; top: 40px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 8px; display: none; flex-direction: column; z-index: 90; min-width: 130px; border: 1px solid #edf2f7; overflow: hidden; }
+        /* Тугмаи 3 нуқта */
+        .card-more-btn { background: none; border: none; font-size: 20px; color: #a0aec0; cursor: pointer; padding: 0 8px; outline: none; position: relative; z-index: 10; }
+        .card-context-menu { position: absolute; right: 10px; top: 40px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 8px; display: none; flex-direction: column; z-index: 95; min-width: 180px; border: 1px solid #edf2f7; overflow: hidden; }
         .card-context-menu button { padding: 10px 12px; font-size: 13px; color: #ff3b30; background: none; border: none; text-align: left; cursor: pointer; width: 100%; font-weight: 500; }
         .card-context-menu button:hover { background: #fff5f5; }
 
@@ -77,7 +76,6 @@
         .action-btn { flex: 1; min-width: 75px; padding: 8px 4px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; }
         .btn-enter { background: #e0e7ff; color: #4f46e5; }
         .btn-share { background: #d1fae5; color: #065f46; }
-        .btn-delete { background: #fee2e2; color: #dc2626; }
 
         .searched-user-box { background: #e0e7ff; border: 2px dashed #4f46e5; padding: 12px; border-radius: 14px; margin-bottom: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
 
@@ -95,7 +93,6 @@
 
 <div class="phone-container">
 
-    <!-- Auth -->
     <div id="auth-screen">
         <div class="auth-form">
             <h2 style="margin-bottom: 10px;">Воридшавӣ</h2>
@@ -109,7 +106,6 @@
         </div>
     </div>
 
-    <!-- Chat Window -->
     <div id="chat-window">
         <div class="chat-header">
             <div class="chat-header-left">
@@ -118,13 +114,12 @@
             </div>
         </div>
         <div class="chat-messages" id="chat-messages-list"></div>
-        <div class="chat-input-area">
+        <div class="chat-input-area" id="chat-input-panel">
             <textarea id="message-input" placeholder="Паёмак..." oninput="autoGrow(this)"></textarea>
             <button class="btn" onclick="sendMessage()" style="width: auto; padding: 10px 20px; flex-shrink: 0; height: 40px; border-radius: 18px;">Фиристодан</button>
         </div>
     </div>
 
-    <!-- Screens -->
     <div id="home-screen" class="screen">
         <input type="text" id="search-input" onkeyup="searchFunction()" placeholder="🔍 Ҷустуҷӯ бо номи комната ё рақам...">
         <div id="search-user-result"></div>
@@ -136,7 +131,7 @@
     </div>
 
     <div id="groups-screen" class="screen">
-        <input type="text" id="search-groups-input" onkeyup="searchGroupsFunction()" placeholder="🔍 Ҷустуҷӯи гурӯҳҳо...">
+        <input type="text" id="search-groups-input" onkeyup="searchGroupsFunction()" placeholder="🔍 Ҷустуҷӯи гурӯҳҳо бо ном ё рақам...">
         <h3 style="margin: 10px 0;">👥 Ҳамаи Гурӯҳҳо</h3>
         <div id="all-groups-list"></div>
     </div>
@@ -174,7 +169,6 @@
             <button class="btn" id="open-group-form-btn" onclick="toggleGroupForm(true)" style="flex: 1; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">➕ Сохтани гурӯҳ</button>
         </div>
 
-        <!-- Create Room Form -->
         <div class="create-room-box" id="room-form-box">
             <h4 style="margin-bottom: 5px; color: #4a5568;">Маълумоти комната</h4>
             <input type="text" id="room-name" placeholder="Номи комната">
@@ -185,7 +179,6 @@
             <button class="btn btn-secondary" onclick="toggleRoomForm(false)">Баргаштан</button>
         </div>
 
-        <!-- Create Group Form -->
         <div class="create-room-box" id="group-form-box">
             <h4 style="margin-bottom: 5px; color: #4a5568;">Маълумоти гурӯҳ</h4>
             <input type="text" id="group-name" placeholder="Номи гурӯҳ">
@@ -194,7 +187,7 @@
             <input type="file" id="group-icon" accept="image/*" style="margin-bottom: 10px; width: 100%;">
             <div style="display: flex; align-items: center; gap: 10px; margin: 10px 0;">
                 <input type="checkbox" id="group-mute-others" style="width: 20px; height: 20px;">
-                <label for="group-mute-others" style="font-size: 14px; color: #4a5568; user-select: none;">Хомӯш кардани чат барои дигарон (Танҳо админ нависад)</label>
+                <label for="group-mute-others" style="font-size: 14px; color: #4a5568; user-select: none;">Хомӯш кардани чат барои дигарон</label>
             </div>
             <button class="btn" onclick="createGroup()" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">Сохтан</button>
             <button class="btn btn-secondary" onclick="toggleGroupForm(false)">Баргаштан</button>
@@ -203,11 +196,10 @@
         <hr>
         <h3 style="margin-bottom: 10px;">📦 Комнатаҳои сохтаи ман</h3>
         <div id="my-rooms-list"></div>
-        <h3 style="margin-bottom: 10px; margin-top: 15px;">📦 Гурӯҳҳои сохтаи mine</h3>
+        <h3 style="margin-bottom: 10px; margin-top: 15px;">📦 Гурӯҳҳои сохтаи ман</h3>
         <div id="my-groups-list"></div>
     </div>
 
-    <!-- Navigation -->
     <div class="bottom-nav">
         <button class="nav-item active" onclick="switchScreen('home-screen', this)">
             <svg viewBox="0 0 24 24"><path d="M19 6H5c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 12H5v-2h8v2zm4-4H5v-2h12v2zm0-4H5V8h12v2z"/></svg>Комнатаҳо
@@ -266,7 +258,6 @@
             }
         });
 
-        // Пӯшидани менюҳои кушода ҳангоми пахши дигар ҷойҳо
         document.addEventListener('click', function() {
             document.querySelectorAll('.card-context-menu').forEach(m => m.style.display = 'none');
         });
@@ -294,12 +285,14 @@
         }
     }
 
+    // Танҳо дар менюи бахши "Я" кушода мешавад
     function toggleCardMenu(event, id) {
         event.stopPropagation();
+        let targetMenuId = 'menu-' + id;
         document.querySelectorAll('.card-context-menu').forEach(m => {
-            if(m.id !== 'menu-' + id) m.style.display = 'none';
+            if(m.id !== targetMenuId) m.style.display = 'none';
         });
-        let menu = document.getElementById('menu-' + id);
+        let menu = document.getElementById(targetMenuId);
         if(menu) {
             menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
         }
@@ -307,12 +300,12 @@
 
     function clearLocalChat(id, event) {
         if(event) event.stopPropagation();
-        if(confirm("Оё мехоҳед паёмҳои ин чатро аз экрани худ пок кунед?")) {
+        if(confirm("Оё мехоҳед рӯйхати паёмҳои ин чатро пок кунед?")) {
             localStorage.setItem('cleared_' + userData.phone + '_' + id, Date.now());
             if(currentChatRoomId === id) {
                 document.getElementById('chat-messages-list').innerHTML = "";
             }
-            alert("Чат пок шуд!");
+            alert("Рӯйхати паёмҳо пок шуд!");
         }
     }
 
@@ -414,6 +407,7 @@
         element.classList.add('active');
         if(screenId === 'chat-screen') { renderActiveChats(); }
         if(screenId === 'bell-screen') { renderSubscriptionsUI(); }
+        if(screenId === 'profile-screen') { renderRoomsUI(); renderGroupsUI(); }
     }
 
     function toggleProfileForm(show) { document.getElementById('edit-profile-box').style.display = show ? 'block' : 'none'; }
@@ -462,28 +456,28 @@
             let isSubbed = subscriptionsData[room.id] ? "🔔" : "🔕";
             let bellHTML = room.creatorPhone !== userData.phone ? `<button class="bell-btn" onclick="toggleSubscription('${room.id}', 'room', event)">${isSubbed}</button>` : '';
 
-            // Се нуқта ва меню барои ҳар як рамка
-            let menuHTML = `
-                <button class="card-more-btn" onclick="toggleCardMenu(event, '${room.id}')">⋮</button>
-                <div class="card-context-menu" id="menu-${room.id}">
-                    <button onclick="clearLocalChat('${room.id}', event)">Пок кардани чат</button>
-                </div>`;
-
+            // 1. Дар бахши ҳамаи комнатаҳо СЕ НУҚТА НЕСТ!
             allRoomsHTML += `
                 <div class="item-card" onclick="tryEnterRoom('${room.id}', 'room')">
                     <div class="card-main-info">
                         <img src="${room.img || defaultAvatar}" class="room-avatar">
                         <div class="card-info" style="flex:1; margin-left:10px;">
                             <b>🏢 ${room.name}</b>
-                            <span style="font-size:11px; color:gray;">Аз: ${room.creatorName}</span>
+                            <span style="font-size:11px; color:gray;">Аз: ${room.creatorName} (${room.creatorPhone})</span>
                         </div>
                         <span class="lock-icon">${lockIcon}</span>
                         ${bellHTML}
-                        ${menuHTML}
                     </div>
                 </div>`;
 
+            // 2. СЕ НУҚТА ФАҚАТ ДАР БАХШИ "Я" ПАЙДО МЕШАВАД
             if(room.creatorPhone === userData.phone) {
+                let menuHTML = `
+                    <button class="card-more-btn" onclick="toggleCardMenu(event, 'profile-${room.id}')">⋮</button>
+                    <div class="card-context-menu" id="menu-profile-${room.id}">
+                        <button onclick="clearLocalChat('${room.id}', event)">Пок кардани рӯйхати паёмҳо</button>
+                    </div>`;
+
                 myRoomsHTML += `
                     <div class="item-card">
                         <div class="card-main-info">
@@ -493,7 +487,6 @@
                         </div>
                         <div class="room-actions">
                             <button class="action-btn btn-enter" onclick="tryEnterRoom('${room.id}', 'room')">Ворид</button>
-                            <button class="action-btn btn-delete" onclick="deleteRoom('${room.id}')">Нест кардан</button>
                         </div>
                     </div>`;
             }
@@ -509,27 +502,28 @@
             let isSubbed = subscriptionsData[group.id] ? "🔔" : "🔕";
             let bellHTML = group.creatorPhone !== userData.phone ? `<button class="bell-btn" onclick="toggleSubscription('${group.id}', 'group', event)">${isSubbed}</button>` : '';
 
-            let menuHTML = `
-                <button class="card-more-btn" onclick="toggleCardMenu(event, '${group.id}')">⋮</button>
-                <div class="card-context-menu" id="menu-${group.id}">
-                    <button onclick="clearLocalChat('${group.id}', event)">Пок кардани чат</button>
-                </div>`;
-
+            // Дар бахши ҳамаи гурӯҳҳо се нуқта ва тугмаи пок кардан НЕСТ!
             allGroupsHTML += `
                 <div class="item-card" onclick="tryEnterRoom('${group.id}', 'group')">
                     <div class="card-main-info">
                         <img src="${group.img || defaultAvatar}" class="room-avatar">
                         <div class="card-info" style="flex:1; margin-left:10px;">
                             <b>👥 ${group.name}</b>
-                            <span style="font-size:11px; color:gray;">Аз: ${group.creatorName}</span>
+                            <span style="font-size:11px; color:gray;">Аз: ${group.creatorName} (${group.creatorPhone})</span>
                         </div>
                         <span class="lock-icon">${lockIcon}</span>
                         ${bellHTML}
-                        ${menuHTML}
                     </div>
                 </div>`;
 
+            // СЕ НУҚТА ФАҚАТ ДАР БАХШИ "Я" ПАЙДО МЕШАВАД
             if(group.creatorPhone === userData.phone) {
+                let menuHTML = `
+                    <button class="card-more-btn" onclick="toggleCardMenu(event, 'profile-${group.id}')">⋮</button>
+                    <div class="card-context-menu" id="menu-profile-${group.id}">
+                        <button onclick="clearLocalChat('${group.id}', event)">Пок кардани рӯйхати паёмҳо</button>
+                    </div>`;
+
                 myGroupsHTML += `
                     <div class="item-card">
                         <div class="card-main-info">
@@ -539,12 +533,11 @@
                         </div>
                         <div class="room-actions">
                             <button class="action-btn btn-enter" onclick="tryEnterRoom('${group.id}', 'group')">Ворид</button>
-                            <button class="action-btn btn-delete" onclick="deleteGroup('${group.id}')">Нест кардан</button>
                         </div>
                     </div>`;
             }
         });
-        document.getElementById('my-groups-list').innerHTML = myGroupsHTML || "<p style='color:gray; font-size:13px;'>Сохта نشدهаст.</p>";
+        document.getElementById('my-groups-list').innerHTML = myGroupsHTML || "<p style='color:gray; font-size:13px;'>Сохта нашудааст.</p>";
         document.getElementById('all-groups-list').innerHTML = allGroupsHTML || "<p style='color:gray; font-size:13px;'>Гурӯҳ нест.</p>";
     }
 
@@ -592,9 +585,6 @@
         if(fileInput.files && fileInput.files[0]) { compressImage(fileInput.files[0], function(url) { obj.img = url; save(); }); } else { save(); }
     }
 
-    function deleteRoom(id) { if(confirm("Нест карда шавад?")) { database.ref('rooms/' + id).remove(); database.ref('messages/' + id).remove(); } }
-    function deleteGroup(id) { if(confirm("Нест карда шавад?")) { database.ref('groups/' + id).remove(); database.ref('messages/' + id).remove(); } }
-
     function tryEnterRoom(id, type) {
         let item = type === 'room' ? roomsData.find(r => r.id === id) : groupsData.find(g => g.id === id);
         if(!item) return;
@@ -610,6 +600,16 @@
         document.getElementById('chat-title').innerText = (type === 'room' ? "🏢 " : "👥 ") + name;
         document.getElementById('chat-window').style.display = 'flex';
         if(unreadCounts[id]) { unreadCounts[id] = 0; updateTotalUnreadBadge(); }
+
+        // Санҷиш: Агар гурӯҳи каси дигар бошад кутии паёмнависӣ пинҳон мешавад
+        let item = type === 'room' ? roomsData.find(r => r.id === id) : groupsData.find(g => g.id === id);
+        let inputPanel = document.getElementById('chat-input-panel');
+        if(type === 'group' && item && item.creatorPhone !== userData.phone) {
+            inputPanel.style.display = 'none'; // Пинҳон кардан
+        } else {
+            inputPanel.style.display = 'flex'; // Нишон додан
+        }
+
         loadChatMessages(id);
     }
 
@@ -626,10 +626,13 @@
             if(msgs) {
                 Object.keys(msgs).forEach(mId => {
                     let m = msgs[mId];
-                    if(m.timestamp && m.timestamp < clearedTime) return; // паёмҳои покшуда нишон дода намешаванд
+                    if(m.timestamp && m.timestamp < clearedTime) return;
 
                     let isMe = m.senderPhone === userData.phone ? "me" : "other";
+                    // Корзина дар дохили чат барои паёми худи корбар меистад
                     let delHTML = isMe === 'me' ? `<button class="delete-btn" onclick="deleteMessage('${mId}')">❌</button>` : '';
+                    // Галочка (дизайни хонда шудан/вақт)
+                    let checkMark = isMe === 'me' ? ' ✓✓' : '';
 
                     let wrapper = document.createElement('div');
                     wrapper.className = `msg-wrapper ${isMe}`;
@@ -639,7 +642,7 @@
                             <span class="msg-username">${m.senderName}</span>
                             <div class="msg-bubble">
                                 <div class="msg-text">${m.text}</div>
-                                <div class="msg-footer"><span>${m.time}</span>${delHTML}</div>
+                                <div class="msg-footer"><span>${m.time}${checkMark}</span>${delHTML}</div>
                             </div>
                         </div>`;
                     container.appendChild(wrapper);
@@ -654,11 +657,6 @@
     function sendMessage() {
         let input = document.getElementById('message-input');
         let text = input.value.trim(); if(!text) return;
-
-        let item = currentChatType === 'room' ? roomsData.find(r => r.id === currentChatRoomId) : groupsData.find(g => g.id === currentChatRoomId);
-        if(currentChatType === 'group' && item && item.muteOthers && item.creatorPhone !== userData.phone) {
-            alert("Танҳо админ навишта метавонад!"); return;
-        }
 
         let d = new Date();
         let timeStr = d.getHours().toString().padStart(2, '0') + ":" + d.getMinutes().toString().padStart(2, '0');
@@ -678,7 +676,6 @@
 
                 if(!knownMessageIds[msgSnap.key]) {
                     knownMessageIds[msgSnap.key] = true;
-                    // Танҳо барои чатҳое, ки худи корбар сохтааст, огоҳинома меояд
                     let myItem = roomsData.find(r => r.id === rId && r.creatorPhone === userData.phone) || 
                                  groupsData.find(g => g.id === rId && g.creatorPhone === userData.phone);
 
@@ -699,7 +696,6 @@
         if(total > 0) { badge.innerText = total; badge.style.display = "block"; } else { badge.style.display = "none"; }
     }
 
-    // Танҳо чатҳои сохтаи худи корбар дар бахши Чат нишон дода мешаванд
     function renderActiveChats() {
         let container = document.getElementById('active-chats-list');
         container.innerHTML = "";
@@ -713,16 +709,11 @@
             return;
         }
 
+        // Дар ин бахш (Чатҳо ва гурӯҳҳои сохтаи ман) низ 3 нуқта БУРРА ГИРИФТА ШУД
         allMyCreated.forEach(item => {
             let isRoom = roomsData.some(r => r.id === item.id);
             let prefix = isRoom ? "🏢" : "👥";
             let unread = unreadCounts[item.id] ? `<span class="badge">${unreadCounts[item.id]}</span>` : '';
-
-            let menuHTML = `
-                <button class="card-more-btn" onclick="toggleCardMenu(event, '${item.id}')">⋮</button>
-                <div class="card-context-menu" id="menu-${item.id}">
-                    <button onclick="clearLocalChat('${item.id}', event)">Пок кардани чат</button>
-                </div>`;
 
             let card = document.createElement('div');
             card.className = "item-card";
@@ -735,23 +726,29 @@
                         <span style="font-size:11px; color:gray;">Танҳо сохтаи ман</span>
                     </div>
                     ${unread}
-                    ${menuHTML}
                 </div>`;
             container.appendChild(card);
         });
     }
 
+    // Ҷустуҷӯи зинда бо ном ва рақами телефон (пештара)
     function searchFunction() {
         let input = document.getElementById('search-input').value.trim().toLowerCase();
         let cards = document.getElementById('all-rooms-list').getElementsByClassName('item-card');
-        for (let i = 0; i < cards.length; i++) { cards[i].style.display = cards[i].innerText.toLowerCase().includes(input) ? "flex" : "none"; }
+        for (let i = 0; i < cards.length; i++) { 
+            cards[i].style.display = cards[i].innerText.toLowerCase().includes(input) ? "flex" : "none"; 
+        }
     }
+    
     function searchGroupsFunction() {
         let input = document.getElementById('search-groups-input').value.trim().toLowerCase();
         let cards = document.getElementById('all-groups-list').getElementsByClassName('item-card');
-        for (let i = 0; i < cards.length; i++) { cards[i].style.display = cards[i].innerText.toLowerCase().includes(input) ? "flex" : "none"; }
+        for (let i = 0; i < cards.length; i++) { 
+            cards[i].style.display = cards[i].innerText.toLowerCase().includes(input) ? "flex" : "none"; 
+        }
     }
-    function resetRoomFilter() { filterByCreatorPhone = ""; resetRoomFilter(); }
+    
+    function resetRoomFilter() { filterByCreatorPhone = ""; }
 </script>
 </body>
 </html>
