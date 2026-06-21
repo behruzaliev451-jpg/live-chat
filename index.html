@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Чат бо Менюи се нуқта ва режими Гурӯҳ/Канал</title>
+    <title>Чат бо Огоҳиномаҳои Обуна ва Чатҳои Оддӣ</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: #f5f7fb; display: flex; justify-content: center; align-items: center; height: 100vh; height: 100dvh; overflow: hidden; }
@@ -106,7 +106,6 @@
 
 <div class="phone-container">
 
-    <!-- Экран авторизации -->
     <div id="auth-screen">
         <div class="auth-form">
             <h2 style="margin-bottom: 10px;">Воридшавӣ / Сабти ном</h2>
@@ -120,7 +119,6 @@
         </div>
     </div>
 
-    <!-- Окно чата -->
     <div id="chat-window">
         <div class="chat-header">
             <div class="header-left">
@@ -143,7 +141,6 @@
         </div>
     </div>
 
-    <!-- Экран: Главная -->
     <div id="home-screen" class="screen">
         <input type="text" id="search-input" onkeyup="searchFunction()" placeholder="🔍 Ҷустуҷӯ бо номи комната ё рақам...">
         <div id="search-user-result"></div>
@@ -154,13 +151,11 @@
         <div id="all-rooms-list"></div>
     </div>
 
-    <!-- Экран: Активные Чаты -->
     <div id="chat-screen" class="screen">
         <h3 style="margin-bottom: 10px;">💬 Чатҳои фаъол</h3>
         <div id="active-chats-list"></div>
     </div>
 
-    <!-- Экран: Профиль -->
     <div id="profile-screen" class="screen">
         <h3 style="margin-bottom: 10px;">👤 Профили ман</h3>
         <div class="user-profile-box" id="my-profile-info"></div>
@@ -200,7 +195,6 @@
         <div id="my-rooms-list"></div>
     </div>
 
-    <!-- Нижняя Навигация -->
     <div class="bottom-nav">
         <button class="nav-item active" onclick="switchScreen('home-screen', this)">
             <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Главни
@@ -215,12 +209,11 @@
     </div>
 </div>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
 <script>
-    // Танзимоти Firebase (Бо калидҳои худ иваз кунед)
+    // Танзимоти Firebase 
     const firebaseConfig = {
         apiKey: "AIzaSy...",
         authDomain: "my-live-chat-ca902.firebaseapp.com",
@@ -593,9 +586,12 @@
         document.getElementById('chat-title').innerText = roomName;
         document.getElementById('chat-window').style.display = 'flex';
         
+        // Ҳангоми ворид шудан ба чат, огоҳинома фавран нест мешавад
         lastReadTimestamps[roomId] = Date.now();
         localStorage.setItem('chat_last_ticks', JSON.stringify(lastReadTimestamps));
-        
+        unreadCounts[roomId] = 0;
+        updateBadgeUI();
+
         checkRoomTypeAndSubscription(roomId);
         loadMessages(roomId);
     }
@@ -604,6 +600,7 @@
         if (currentChatRoomId) {
             lastReadTimestamps[currentChatRoomId] = Date.now();
             localStorage.setItem('chat_last_ticks', JSON.stringify(lastReadTimestamps));
+            unreadCounts[currentChatRoomId] = 0; 
             database.ref('messages/' + currentChatRoomId).off();
             database.ref(`rooms/${currentChatRoomId}/subscribers/${userData.phone}`).off();
         }
@@ -653,6 +650,11 @@
         if(!currentChatRoomId) return;
         let subBtn = document.getElementById('subscribe-button');
         let isSubscribed = subBtn.classList.contains('subscribed');
+        
+        // Ҳангоми зер кардани тугмаи Подписаться/Отписаться вақтро нав мекунем
+        lastReadTimestamps[currentChatRoomId] = Date.now();
+        localStorage.setItem('chat_last_ticks', JSON.stringify(lastReadTimestamps));
+        
         database.ref(`rooms/${currentChatRoomId}/subscribers/${userData.phone}`).set(!isSubscribed);
     }
 
@@ -749,6 +751,7 @@
         }
     }
 
+    // МАНТИҚИ НАВИ УВЕДОМЛЕНИЕ (ОГОҲИНОМАҲО) МУТОБИҚИ ШАРТИ ШУМО:
     function listenToUnreadMessages() {
         roomsData.forEach(room => {
             database.ref('messages/' + room.id).off();
@@ -757,15 +760,47 @@
                 let count = 0;
                 let lastRead = lastReadTimestamps[room.id] || 0;
                 
-                if(data) {
-                    Object.keys(data).forEach(id => {
-                        if(data[id].timestamp > lastRead && data[id].senderPhone !== userData.phone) {
-                            count++;
-                        }
-                    });
+                if (room.id === currentChatRoomId) {
+                    // Агар корбар дар дохили чат бошад, огоҳинома ҳамеша 0 аст
+                    unreadCounts[room.id] = 0;
+                    updateBadgeUI();
+                    return;
                 }
-                unreadCounts[room.id] = count;
-                updateBadgeUI();
+
+                let calculateUnread = () => {
+                    if(data) {
+                        Object.keys(data).forEach(id => {
+                            if(data[id].timestamp > lastRead && data[id].senderPhone !== userData.phone) {
+                                count++;
+                            }
+                        });
+                    }
+                    unreadCounts[room.id] = count;
+                    updateBadgeUI();
+                };
+
+                if (room.isGroup) {
+                    // Агар Группа (Канал) бошад, месанҷем ки корбар подписаться (обуна) кардааст ё не
+                    if (room.creatorPhone === userData.phone) {
+                        // Соҳиби гурӯҳ ҳамеша паёмҳоро мебинад
+                        calculateUnread();
+                    } else {
+                        database.ref(`rooms/${room.id}/subscribers/${userData.phone}`).once('value', (subSnap) => {
+                            let isSubscribed = subSnap.exists() && subSnap.val() === true;
+                            if (isSubscribed) {
+                                // Агар подписаться карда бошад - паёмҳоро ҳисоб кун
+                                calculateUnread();
+                            } else {
+                                // Агар подписаться НАКАРДА бошад - огоҳиномаро 0 кун
+                                unreadCounts[room.id] = 0;
+                                updateBadgeUI();
+                            }
+                        });
+                    }
+                } else {
+                    // Агар чати оддӣ бошад - ба таври автоматӣ паёмҳои навро ҳисоб кун
+                    calculateUnread();
+                }
             });
         });
     }
