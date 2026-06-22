@@ -204,18 +204,33 @@
         appId: "1:396836014742:web:..."
     };
      
-    firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
-	// Садои кликро аз суроғаи GitHub омода мекунем
-const clickSound = new Audio("https://raw.githubusercontent.com/behruzaliev451-jpg/live-chat/main/ckik.mp3");
-// Ба тамоми саҳифа мегӯем, ки ҳар як кликро назорат кунад
-document.addEventListener("click", function(event) {
-    // Агар корбар тугма ё картаҳои чатро зер кунад, садо навохта мешавад
-    if (event.target.closest("button") || event.target.closest(".item-card") || event.target.closest(".searched-user-box")) {
-        clickSound.currentTime = 0; // Садоро аз аввал омода мекунад
-        clickSound.play().catch(err => console.log("Браузер иҷозати садо надод:", err));
+
+    // 1. Садои кликро аз суроғаи GitHub омода мекунем
+    const clickSound = new Audio("https://raw.githubusercontent.com/behruzaliev451-jpg/live-chat/main/ckik.mp3");
+
+    // 2. Садои махсус барои омадани паёми нав (инро нав илова кардем)
+    const msgSound = new Audio("https://raw.githubusercontent.com/behruzaliev451-jpg/live-chat/main/ckik.mp3"); 
+
+    // Ба тамоми саҳифа мегӯем, ки ҳар як кликро назорат кунад
+    document.addEventListener("click", function(event) {
+        // Агар корбар тугма ё картаҳои чатро зер кунад, садо навохта мешавад
+        if (event.target.closest("button") || event.target.closest(".item-card") || event.target.closest(".searched-user-box")) {
+            clickSound.currentTime = 0; // Садоро аз аввал омода мекунад
+            clickSound.play().catch(err => console.log("Браузер иҷозати садо надод:", err));
+        }
+    });
+
+    // 3. Функсияи махсус барои навохтани садои паёми нав
+    // Ин функсияро вақте истифода мебарем, ки паёми нав аз сервер ояд
+    function playIncomingMessageSound(senderPhone) {
+        // Шарт: Агар рақами нависандаи паём ба рақами мо баробар НАБОШАД, садо занад
+        if (userData && senderPhone !== userData.phone) {
+            msgSound.currentTime = 0; // Садоро аз аввал омода мекунад
+            msgSound.play().catch(err => console.log("Браузер иҷозати садои паёкро надод:", err));
+        }
     }
-});
 
     let currentChatRoomId = "";
     let roomsData = []; 
