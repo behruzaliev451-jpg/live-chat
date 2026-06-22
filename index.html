@@ -204,6 +204,7 @@
 
 
 <script>
+    // Танзимоти Firebase (Firebase Configuration)
     const firebaseConfig = {
         apiKey: "AIzaSy...",
         authDomain: "my-live-chat-ca902.firebaseapp.com",
@@ -214,6 +215,7 @@
         appId: "1:396836014742:web:..."
     };
      
+    // Инициализатсияи Firebase
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
@@ -241,12 +243,16 @@
     let userData = { name: "", phone: "", password: "", img: defaultAvatar };
 
     window.onload = function() {
-        document.getElementById('message-input').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
+        // Назорати тугмаи Enter дар инпути паёмак (агар мавҷуд бошад)
+        const msgInput = document.getElementById('message-input');
+        if (msgInput) {
+            msgInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        }
 
         let savedUser = localStorage.getItem('chat_user_data');
         if(savedUser) {
@@ -342,18 +348,23 @@
             document.getElementById('userphone').value = "";
             document.getElementById('userpass').value = "";
             document.getElementById('auth-screen').style.display = 'flex';
+            // Тоза кардани экранҳои фаъол ҳангоми баромад
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
         }
     }
 
     function updateProfileUI() {
-        document.getElementById('my-profile-info').innerHTML = `
-            <img src="${userData.img || defaultAvatar}" class="profile-avatar-big">
-            <div style="flex: 1; font-size: 15px; color: #2d3748;">
-                <b>Ном:</b> <span>${userData.name}</span><br>
-                <span style="margin-top: 3px; display:inline-block;"><b>Рақам:</b> <span>${userData.phone}</span></span><br>
-                <button class="btn btn-secondary btn-sm" onclick="toggleProfileForm(true)">✏️ Таҳрир</button>
-                <button class="btn btn-danger btn-sm" onclick="logout()" style="margin-left: 5px;">🚪 Баромадан</button>
-            </div>`;
+        const profileBox = document.getElementById('my-profile-info');
+        if (profileBox) {
+            profileBox.innerHTML = `
+                <img src="${userData.img || defaultAvatar}" class="profile-avatar-big">
+                <div style="flex: 1; font-size: 15px; color: #2d3748;">
+                    <b>Ном:</b> <span>${userData.name}</span><br>
+                    <span style="margin-top: 3px; display:inline-block;"><b>Рақам:</b> <span>${userData.phone}</span></span><br>
+                    <button class="btn btn-secondary btn-sm" onclick="toggleProfileForm(true)">✏️ Таҳрир</button>
+                    <button class="btn btn-danger btn-sm" onclick="logout()" style="margin-left: 5px;">🚪 Баромадан</button>
+                </div>`;
+        }
     }
 
     function saveProfileChanges() {
@@ -388,7 +399,7 @@
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
         document.getElementById(screenId).classList.add('active-screen');
         document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        element.classList.add('active');
+        if (element) element.classList.add('active');
         if(screenId === 'chat-screen') { renderActiveChats(); }
     }
 
@@ -407,8 +418,8 @@
     function toggleRoomForm(show) {
         let formBox = document.getElementById('room-form-box');
         let openBtn = document.getElementById('open-form-btn');
-        formBox.style.display = show ? 'block' : 'none';
-        openBtn.style.display = show ? 'none' : 'block';
+        if (formBox) formBox.style.display = show ? 'block' : 'none';
+        if (openBtn) openBtn.style.display = show ? 'none' : 'block';
     }
 
     function loadRoomsFromServer() {
@@ -459,7 +470,7 @@
                             <span class="lock-icon">${lockIcon}</span>
                         </div>
                         
-                        <button class="manage-btn" onclick="toggleManageMenu('${room.id}')">⚙️ Ипоракунӣ</button>
+                        <button class="manage-btn" onclick="toggleManageMenu('${room.id}')">⚙️ Идоракунӣ</button>
                         
                         <div class="manage-menu" id="menu-${room.id}">
                             <button class="menu-item" onclick="tryEnterRoom('${room.id}')">🚪 Ворид шудан</button>
@@ -467,14 +478,18 @@
                             <button class="menu-item" onclick="clearRoomChat('${room.id}')">🧹 Пок кардани чат</button>
                             <button class="menu-item" onclick="toggleRoomSecret('${room.id}', ${!!room.isSecret})">${secretText}</button>
                             <button class="menu-item" onclick="toggleAdminWriteOnly('${room.id}', ${!!room.onlyAdminCanWrite})">${adminWriteText}</button>
+                            <button class="menu-item" onclick="shareRoom('${room.id}')">🔗 Истиноди комната</button>
                             <button class="menu-item danger" onclick="deleteRoom('${room.id}')">🗑️ Нест кардани комната</button>
                         </div>
                     </div>`;
             }
         });
 
-        document.getElementById('my-rooms-list').innerHTML = myRoomsHTML || "<p style='color:gray; font-size:14px;'>Комнатаҳои сохтаи шумо нест.</p>";
-        document.getElementById('all-rooms-list').innerHTML = allRoomsHTML || "<p style='color:gray; font-size:14px;'>Ҳеҷ комнатае мавҷуд нест.</p>";
+        const myRoomsList = document.getElementById('my-rooms-list');
+        const allRoomsList = document.getElementById('all-rooms-list');
+        
+        if (myRoomsList) myRoomsList.innerHTML = myRoomsHTML || "<p style='color:gray; font-size:14px;'>Комнатаҳои сохтаи шумо нест.</p>";
+        if (allRoomsList) allRoomsList.innerHTML = allRoomsHTML || "<p style='color:gray; font-size:14px;'>Ҳеҷ комнатае мавҷуд нест.</p>";
     }
 
     function toggleManageMenu(roomId) {
@@ -517,7 +532,9 @@
     }
 
     function toggleAdminWriteOnly(roomId, currentStatus) {
-        database.ref('rooms/' + roomId).update({ onlyAdminCanWrite: !currentStatus });
+        database.ref('rooms/' + roomId).update({ onlyAdminCanWrite: !currentStatus }).then(() => {
+            alert(!currentStatus ? "Ҳолати 'Танҳо админ нависад' фаъол шуд!" : "Ҳолати навиштани паём барои ҳама кушода шуд!");
+        });
     }
 
     function searchFunction() {
@@ -643,7 +660,6 @@
                         if (lastMsg) {
                             let isMyOwnMessage = (lastMsg.phone === userData.phone);
                             let isUserInsideThisChat = (roomId === currentChatRoomId);
-                            // Паём дар 2.5 сонияи охир омада бошад (паёми нав бошад)
                             let isRecentMessage = (Date.now() - (lastMsg.timestamp || 0) < 2500);
 
                             if (!isMyOwnMessage && !isUserInsideThisChat && isRecentMessage) {
@@ -666,11 +682,13 @@
             }
 
             let navBadge = document.getElementById('total-unread-badge');
-            if(totalUnreadCount > 0) {
-                navBadge.innerText = totalUnreadCount;
-                navBadge.style.display = "block";
-            } else {
-                navBadge.style.display = "none";
+            if (navBadge) {
+                if(totalUnreadCount > 0) {
+                    navBadge.innerText = totalUnreadCount;
+                    navBadge.style.display = "block";
+                } else {
+                    navBadge.style.display = "none";
+                }
             }
 
             activeChats.sort((a, b) => b.timestamp - a.timestamp);
@@ -697,7 +715,8 @@
                     </div>
                 </div>`;
         });
-        document.getElementById('active-chats-list').innerHTML = activeListHTML || "<p style='color:gray; font-size:14px;'>Чатҳои фаъол мавҷуд нестанд.</p>";
+        const activeChatsList = document.getElementById('active-chats-list');
+        if (activeChatsList) activeChatsList.innerHTML = activeListHTML || "<p style='color:gray; font-size:14px;'>Чатҳои фаъол мавҷуд нестанд.</p>";
     }
 
     function openChat(name, img, roomId) {
@@ -712,7 +731,7 @@
             let currentRoom = roomSnapshot.val();
             let inputZone = document.getElementById('chat-input-zone');
             
-            if(currentRoom) {
+            if(currentRoom && inputZone) {
                 let isCurrentAdmin = currentRoom.creatorPhone === userData.phone;
 
                 if(currentRoom.onlyAdminCanWrite && !isCurrentAdmin) {
@@ -842,7 +861,7 @@
             });
         }
 
-        if(fileInput.files && fileInput.files[0]) {
+        if(fileInput && fileInput.files && fileInput.files[0]) {
             compressImage(fileInput.files[0], function(compressedUrl) {
                 roomData.img = compressedUrl;
                 saveRoom();
@@ -851,14 +870,23 @@
     }
 
     function deleteRoom(roomId) {
-        if(confirm("Оё мехоҳед ин комнатаро нест кунед? Ҳамаи паёмҳо نیز нест мешаванд.")) {
+        if(confirm("Оё мехоҳед ин комнатаро нест кунед? Ҳамаи паёмҳо низ нест мешаванд.")) {
             database.ref('rooms/' + roomId).remove();
             database.ref('messages/' + roomId).remove();
         }
     }
 
-    function shareRoom(link) {
-        alert("Истинод барои нусхабардорӣ: " + (link || "Ҳанӯз омода нест"));
+    function shareRoom(roomId) {
+        // Эҷод кардани истиноди барнома дар асоси ID-и комната
+        let roomLink = window.location.origin + window.location.pathname + "?room=" + roomId;
+        
+        // Нусхабардорӣ ба буфер (Clipboard)
+        navigator.clipboard.writeText(roomLink).then(() => {
+            alert("Истиноди комната ба буфер нусхабардорӣ шуд!\n" + roomLink);
+        }).catch(err => {
+            // Агар браузер автоматикӣ нусха накунад, дар prompt нишон медиҳад
+            prompt("Истинодро нусхабардорӣ кунед:", roomLink);
+        });
     }
 </script>
 
