@@ -215,7 +215,6 @@
      
     let userData = { name: "", phone: "", password: "", img: defaultAvatar };
 
-    // ИСЛОҲШУДА БАРОИ САНҶИШИ ССЫЛКА ВАКТИ КУШОДАШУДАН
     window.onload = function() {
         document.getElementById('message-input').addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -229,13 +228,12 @@
             userData = JSON.parse(savedUser);
             enterApp();
             
-            // Санҷиш: Агар корбар аз рӯи линк омада бошад, худкор ба он комната ворид кун
             let urlParams = new URLSearchParams(window.location.search);
             let roomIdFromLink = urlParams.get('room');
             if(roomIdFromLink) {
                 setTimeout(() => {
                     tryEnterRoom(roomIdFromLink);
-                }, 1500); // 1.5 сония сабр мекунем, то комнатаҳо аз база бор шаванд
+                }, 1500);
             }
         }
     }
@@ -597,6 +595,7 @@
         return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
     }
 
+    // ИСЛОҲШУДАИ АСОСӢ: МАНТИҚИ МАХФИЯТИ ЧАТҲО ВА НАВИСАНДАГОН
     function listenToUnreadMessages() {
         database.ref('messages').on('value', (snapshot) => {
             let allMessages = snapshot.val();
@@ -607,7 +606,8 @@
                 Object.keys(allMessages).forEach(roomId => {
                     let room = roomsData.find(r => r.id === roomId);
                     
-                    if(room && (room.creatorPhone === userData.phone || Object.values(allMessages[roomId]).some(m => m.phone === userData.phone))) {
+                    // ШАРТИ КАТЪӢ: Танҳо агар КОРБАР соҳиби комната (Админ) бошад, ба бахши чатҳои фаъол илова мешавад
+                    if(room && room.creatorPhone === userData.phone) {
                         let messagesArray = Object.values(allMessages[roomId]);
                         let unreadForThisRoom = 0;
 
@@ -689,7 +689,7 @@
                 let isCurrentAdmin = currentRoom.creatorPhone === userData.phone;
 
                 if(currentRoom.onlyAdminCanWrite && !isCurrentAdmin) {
-                    inputZone.innerHTML = `<div class="chat-blocked-notice">🔏 Танҳо админ метавонад дар ин чат паём нависад!</div>`;
+                    inputZone.innerHTML = `<div class="chat-blocked-notice">🔏 Танҳо admin метавонад дар ин чат паём нависад!</div>`;
                 } else {
                     inputZone.innerHTML = `
                         <textarea id="message-input" placeholder="Паёмак..." oninput="autoGrow(this)"></textarea>
@@ -716,38 +716,51 @@
                 let messagesArray = Object.values(messages);
                 messagesArray.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
 
-                messagesArray.forEach(m => {
-                    let msgDateStr = formatDateDivider(m.timestamp);
-                    if(msgDateStr !== lastDateStr) {
-                        messagesHTML += `<div class="date-divider"><span>${msgDateStr}</span></div>`;
-                        lastDateStr = msgDateStr;
-                    }
+                database.ref('rooms/' + roomId).once('value', (roomSnap) => {
+                    let room = roomSnap.val();
+                    let isCurrentAdmin = room && room.creatorPhone === userData.phone;
 
-                    let isMe = m.phone === userData.phone;
-                    let wrapperClass = isMe ? "me" : "other";
+                    messagesArray.forEach(m => {
+                        // ШАРТИ КАТЪӢ БАРОИ КОРБАРОНИ БЕГОНА:
+                        // Агар ман админ набошам ва паём аз ман набошад ва паём аз админ ҳам набошад -> умуман нишон надеҳ (пинҳон кун)
+                        if (!isCurrentAdmin && m.phone !== userData.phone && m.phone !== room.creatorPhone) {
+                            return; 
+                        }
 
-                    if(!isMe && (!m.seenBy || !m.seenBy[userData.phone])) {
-                        database.ref(`messages/${roomId}/${m.id}/seenBy/${userData.phone}`).set(true);
-                    }
+                        let msgDateStr = formatDateDivider(m.timestamp);
+                        if(msgDateStr !== lastDateStr) {
+                            messagesHTML += `<div class="date-divider"><span>${msgDateStr}</span></div>`;
+                            lastDateStr = msgDateStr;
+                        }
 
-                    messagesHTML += `
-                        <div class="msg-wrapper ${wrapperClass}">
-                            <img src="${m.userImg || defaultAvatar}" class="msg-avatar">
-                            <div class="msg-body">
-                                <span class="msg-username">${m.username}</span>
-                                <div class="msg-bubble">
-                                    <div class="msg-text">${m.text}</div>
-                                    <div class="msg-footer">
-                                        <span>${formatTime(m.timestamp)}</span>
+                        let isMe = m.phone === userData.phone;
+                        let wrapperClass = isMe ? "me" : "other";
+
+                        if(!isMe && (!m.seenBy || !m.seenBy[userData.phone])) {
+                            database.ref(`messages/${roomId}/${m.id}/seenBy/${userData.phone}`).set(true);
+                        }
+
+                        messagesHTML += `
+                            <div class="msg-wrapper ${wrapperClass}">
+                                <img src="${m.userImg || defaultAvatar}" class="msg-avatar">
+                                <div class="msg-body">
+                                    <span class="msg-username">${m.username}</span>
+                                    <div class="msg-bubble">
+                                        <div class="msg-text">${m.text}</div>
+                                        <div class="msg-footer">
+                                            <span>${formatTime(m.timestamp)}</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>`;
+                            </div>`;
+                    });
+                    
+                    messagesList.innerHTML = messagesHTML;
+                    messagesList.scrollTop = messagesList.scrollHeight; 
                 });
+            } else {
+                messagesList.innerHTML = messagesHTML;
             }
-            
-            messagesList.innerHTML = messagesHTML;
-            messagesList.scrollTop = messagesList.scrollHeight; 
         });
     }
 
@@ -830,7 +843,6 @@
         }
     }
 
-    // ИСЛОҲШУДА: ФУНКСИЯИ ВОҚЕИИ НУСХАБАРДОРИИ ССЫЛКА ВА ОГОҲИНОМА
     function shareRoom(roomId) {
         let roomLink = window.location.origin + window.location.pathname + "?room=" + roomId;
 
