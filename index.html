@@ -225,6 +225,9 @@
 
     // Ба тамоми саҳифа мегӯем, ки ҳар як кликро назорат кунад
     document.addEventListener("click", function(event) {
+        // Агар тугмаи корзина пахш шавад, садои клики оддӣ набарояд
+        if (event.target.closest(".delete-active-chat-btn")) return;
+
         // Агар корбар тугма ё картаҳои чатро зер кунад, садо навохта мешавад
         if (event.target.closest("button") || event.target.closest(".item-card") || event.target.closest(".searched-user-box")) {
             clickSound.currentTime = 0; // Садоро аз аввал омода мекунад
@@ -617,6 +620,9 @@
             activeChats = [];
             let totalUnreadCount = 0;
 
+            // Рӯйхати комнатаҳои пинҳонкардаи корбар аз LocalStorage
+            let hiddenRooms = JSON.parse(localStorage.getItem('hidden_active_chats_' + userData.phone)) || [];
+
             if(allMessages) {
                 Object.keys(allMessages).forEach(roomId => {
                     let room = roomsData.find(r => r.id === roomId);
@@ -639,11 +645,19 @@
                         messagesArray.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
                         let lastMsg = messagesArray[messagesArray.length - 1];
 
-                        // ЛОГИКАИ НАВОХТАНИ САДОИ ПАЁМАК:
+                        // Агар ба ин чати пинҳоншуда паёми нав ояд, онро дубора фаъол (намоён) мекунем
+                        if (lastMsg && mSound && hiddenRooms.includes(roomId)) {
+                            let isRecent = (Date.now() - (lastMsg.timestamp || 0) < 2500);
+                            if (isRecent && lastMsg.phone !== userData.phone) {
+                                hiddenRooms = hiddenRooms.filter(id => id !== roomId);
+                                localStorage.setItem('hidden_active_chats_' + userData.phone, JSON.stringify(hiddenRooms));
+                            }
+                        }
+
+                        // Логикаи навохтани садои паёмак
                         if (lastMsg) {
                             let isMyOwnMessage = (lastMsg.phone === userData.phone);
                             let isUserInsideThisChat = (roomId === currentChatRoomId);
-                            // Паём дар 2.5 сонияи охир омада бошад (паёми нав бошад)
                             let isRecentMessage = (Date.now() - (lastMsg.timestamp || 0) < 2500);
 
                             if (!isMyOwnMessage && !isUserInsideThisChat && isRecentMessage) {
@@ -651,6 +665,9 @@
                                 msgSound.play().catch(err => console.log("Браузер автоматикӣ садоро манъ кард:", err));
                             }
                         }
+
+                        // Агар комната дар рӯйхати пинҳоншудаҳо бошад, ба массив илова намешавад
+                        if (hiddenRooms.includes(roomId)) return;
 
                         activeChats.push({
                             roomId: roomId,
@@ -681,11 +698,11 @@
     function renderActiveChats() {
         let activeListHTML = "";
         activeChats.forEach(chat => {
-            let badgeHTML = chat.unreadCount > 0 ? `<span class="badge">${chat.unreadCount}</span>` : "";
+            let badgeHTML = chat.unreadCount > 0 ? `<span class="badge" style="margin-right: 8px;">${chat.unreadCount}</span>` : "";
 
             activeListHTML += `
-                <div class="item-card" onclick="tryEnterRoom('${chat.roomId}')">
-                    <div class="card-main-info">
+                <div class="item-card" onclick="tryEnterRoom('${chat.roomId}')" style="position: relative;">
+                    <div class="card-main-info" style="padding-right: 40px;">
                         <img src="${chat.roomImg || defaultAvatar}" class="room-avatar">
                         <div class="card-info" style="flex:1; margin-left:10px; overflow:hidden;">
                             <b>🏢 ${chat.roomName}</b>
@@ -695,9 +712,28 @@
                         </div>
                         ${badgeHTML}
                     </div>
+                    <!-- Тугмаи Корзина барои нест кардан аз рӯйхати чатҳои фаъол -->
+                    <button class="delete-active-chat-btn" onclick="removeChatFromActive(event, '${chat.roomId}')" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 18px; cursor: pointer; z-index: 10; padding: 5px;">
+                        🗑️
+                    </button>
                 </div>`;
         });
         document.getElementById('active-chats-list').innerHTML = activeListHTML || "<p style='color:gray; font-size:14px;'>Чатҳои фаъол мавҷуд нестанд.</p>";
+    }
+
+    // Функсияи нав барои пинҳон кардани комната аз чатҳои фаъол
+    function removeChatFromActive(event, roomId) {
+        event.stopPropagation(); // Намегузорад, ки чат автоматикӣ кушода шавад
+        if(confirm("Оё мехоҳед ин чатро аз рӯйхати чатҳои фаъол пинҳон кунед?")) {
+            let hiddenRooms = JSON.parse(localStorage.getItem('hidden_active_chats_' + userData.phone)) || [];
+            if(!hiddenRooms.includes(roomId)) {
+                hiddenRooms.push(roomId);
+                localStorage.setItem('hidden_active_chats_' + userData.phone, JSON.stringify(hiddenRooms));
+            }
+            // Рӯйхатро дарҳол нав мекунем
+            activeChats = activeChats.filter(chat => chat.roomId !== roomId);
+            renderActiveChats();
+        }
     }
 
     function openChat(name, img, roomId) {
