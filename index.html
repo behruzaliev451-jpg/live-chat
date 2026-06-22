@@ -837,59 +837,6 @@ document.addEventListener("click", function(event) {
     function shareRoom(link) {
         alert("Истинод барои нусхабардорӣ: " + (link || "Ҳанӯз омода нест"));
     }
-	
-// Суроғаи мустақими файл барои садои паёми нав
-const messageSound = new Audio("https://raw.githubusercontent.com/behruzaliev451-jpg/live-chat/main/chat.mp3");
-let lastUnreadCount = 0;
-
-function listenToUnreadMessages() {
-    // Лутфан санҷед, ки дар Firebase паёмҳо дар таҳти калими 'messages' нигоҳ дошта мешаванд ё не
-    database.ref('messages').on('value', (snapshot) => {
-        let currentUnreadCount = 0;
-        const allMessages = snapshot.val();
-
-        if (allMessages) {
-            // Ҳамаи хонаҳо (комнатаҳо)-ро мегардем
-            Object.keys(allMessages).forEach(roomId => {
-                const roomMessages = allMessages[roomId];
-                
-                // Ҳамаи паёмҳои дохили ин хонаро мегардем
-                Object.keys(roomMessages).forEach(msgId => {
-                    const msg = roomMessages[msgId];
-                    
-                    // ШАРТ: Агар паём аз худи мо набошад ва статусш 'read' (хондашуда) набошад
-                    // Эзоҳ: Агар дар паёмҳоятон 'isRead' дошта бошед, инҷоро истифода баред.
-                    // Агар чунин статус надошта бошед, барнома намедонад паём хонда шудааст ё не.
-                    if (msg.senderPhone !== userData.phone && !msg.isRead) {
-                        currentUnreadCount++;
-                    }
-                });
-            });
-        }
-
-        // Навсозии визуалии тугмаи Чат (Рақами сурх)
-        const badge = document.getElementById('total-unread-badge');
-        if (currentUnreadCount > 0) {
-            badge.innerText = currentUnreadCount;
-            badge.style.display = 'block'; // Нишон додани доираи сурх
-        } else {
-            badge.innerText = '0';
-            badge.style.display = 'none';  // Пинҳон кардан
-        }
-
-        // НАВОХТАНИ САДО: Агар рақами паёмҳо зиёд шавад
-        if (currentUnreadCount > lastUnreadCount) {
-            messageSound.currentTime = 0;
-            // .catch барои он аст, ки браузер хатогӣ надиҳад агар садо блок бошад
-            messageSound.play().catch(err => {
-                console.log("Браузер худкор навохтани садоро маҳдуд кард. Корбар бояд аввал сайтҳо клик кунад:", err);
-            });
-        }
-
-        // Сабти рақами охирин
-        lastUnreadCount = currentUnreadCount;
-    });
-}
 </script>
 </body>
 </html>
