@@ -225,27 +225,27 @@
     // Садои паёмаки навро аз суроғаи GitHub омода мекунем
     const msgSound = new Audio("https://raw.githubusercontent.com/behruzaliev451-jpg/live-chat/main/chat.mp3");
 
-  // Ба тамоми саҳифа мегӯем, ки ҳар як кликро назорат кунад
+// Ба тамоми саҳифа мегӯем, ки ҳар як кликро назорат кунад
 document.addEventListener("click", function(event) {
-    // 1. САНҶИШИ РАВЗАНАИ ВОРИДШАВӢ:
-    // Агар клик дар даруни равзанаи воридшавӣ (#auth-screen) шуда бошад, ҳеҷ садое нанавоз
+    // 1. Агар клик дар даруни равзанаи воридшавӣ (#auth-screen) бошад, садо нанавоз
     if (event.target.closest("#auth-screen")) {
         return; 
     }
 
-    // 2. САНҶИШИ ТУГМАИ НАЗАД (⬅️):
+    // 2. САНҶИШИ БАРОМАД АЗ КОМНАТА:
+    // Тугмаеро меёбад, ки корбар зер кардааст
     let targetButton = event.target.closest("button");
     if (targetButton) {
-        let buttonText = targetButton.innerText;
-        // Агар тугма нишони ⬅️ ё калимаи "Назад" дошта бошад, садо нанавоз
-        if (buttonText.includes("⬅️") || buttonText.includes("Назад")) {
+        let buttonHtml = targetButton.outerHTML;
+        // Агар дар коди тугма функсияи closeChat (баромад аз комната) навишта шуда бошад, садоро манъ кун!
+        if (buttonHtml.includes("closeChat")) {
             return; 
         }
     }
 
-    // 3. БАРОИ ДИГАР ТУГМАҲО ВА ЧАТҲО САДО НАВОХТА МЕШАВАД:
+    // 3. БАРОИ ДИГАР ТУГМАҲО ВА КАРТАҲОИ ЧАТ САДО НАВОХТА МЕШАВАД:
     if (targetButton || event.target.closest(".item-card") || event.target.closest(".searched-user-box")) {
-        clickSound.currentTime = 0; // Садоро аз аввал омода мекунад
+        clickSound.currentTime = 0;
         clickSound.play().catch(err => console.log("Браузер иҷозати садо надод:", err));
     }
 });
