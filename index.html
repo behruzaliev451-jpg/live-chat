@@ -193,6 +193,16 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
+
+
+
+
+
+
+
+
+
+
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSy...",
@@ -206,16 +216,21 @@
      
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
-	// Садои кликро аз суроғаи GitHub омода мекунем
-const clickSound = new Audio("https://raw.githubusercontent.com/behruzaliev451-jpg/live-chat/main/ckik.mp3");
-// Ба тамоми саҳифа мегӯем, ки ҳар як кликро назорат кунад
-document.addEventListener("click", function(event) {
-    // Агар корбар тугма ё картаҳои чатро зер кунад, садо навохта мешавад
-    if (event.target.closest("button") || event.target.closest(".item-card") || event.target.closest(".searched-user-box")) {
-        clickSound.currentTime = 0; // Садоро аз аввал омода мекунад
-        clickSound.play().catch(err => console.log("Браузер иҷозати садо надод:", err));
-    }
-});
+
+    // Садои кликро аз суроғаи GitHub омода мекунем
+    const clickSound = new Audio("https://raw.githubusercontent.com/behruzaliev451-jpg/live-chat/main/ckik.mp3");
+    
+    // Садои паёмаки навро аз суроғаи GitHub омода мекунем
+    const msgSound = new Audio("https://raw.githubusercontent.com/behruzaliev451-jpg/live-chat/main/chat.mp3");
+
+    // Ба тамоми саҳифа мегӯем, ки ҳар як кликро назорат кунад
+    document.addEventListener("click", function(event) {
+        // Агар корбар тугма ё картаҳои чатро зер кунад, садо навохта мешавад
+        if (event.target.closest("button") || event.target.closest(".item-card") || event.target.closest(".searched-user-box")) {
+            clickSound.currentTime = 0; // Садоро аз аввал омода мекунад
+            clickSound.play().catch(err => console.log("Браузер иҷозати садо надод:", err));
+        }
+    });
 
     let currentChatRoomId = "";
     let roomsData = []; 
@@ -407,7 +422,6 @@ document.addEventListener("click", function(event) {
         });
     }
 
-    // ИСЛОҲШУДА БАРОИ ФУНКСИЯИ НЕВИДИМКА (ГӮШ КАРДАН ВА СУЗУРХ КАРДАНИ КАРТАҲО)
     function renderRoomsUI() {
         let myRoomsHTML = ""; 
         let allRoomsHTML = "";
@@ -416,7 +430,6 @@ document.addEventListener("click", function(event) {
             if(filterByCreatorPhone && room.creatorPhone !== filterByCreatorPhone) return;
             let lockIcon = room.pass ? "🔒" : "🔓";
 
-            // Агар комната Невидимка бошад, он дар Главни барои дигарон намоиш дода намешавад!
             if (!room.isSecret || room.creatorPhone === userData.phone) {
                 let hiddenBadge = room.isSecret ? " <span style='color:#6366f1; font-size:11px;'>[🕵️‍♂️ Невидимка]</span>" : "";
                 allRoomsHTML += `
@@ -450,7 +463,7 @@ document.addEventListener("click", function(event) {
                         
                         <div class="manage-menu" id="menu-${room.id}">
                             <button class="menu-item" onclick="tryEnterRoom('${room.id}')">🚪 Ворид шудан</button>
-                                                      <button class="menu-item" onclick="editRoomInfo('${room.id}')">✏️ Таҳрири комната</button>
+                            <button class="menu-item" onclick="editRoomInfo('${room.id}')">✏️ Таҳрири комната</button>
                             <button class="menu-item" onclick="clearRoomChat('${room.id}')">🧹 Пок кардани чат</button>
                             <button class="menu-item" onclick="toggleRoomSecret('${room.id}', ${!!room.isSecret})">${secretText}</button>
                             <button class="menu-item" onclick="toggleAdminWriteOnly('${room.id}', ${!!room.onlyAdminCanWrite})">${adminWriteText}</button>
@@ -497,7 +510,6 @@ document.addEventListener("click", function(event) {
         }
     }
 
-    // ТУГМАИ НАВИ НЕВИДИМКА
     function toggleRoomSecret(roomId, currentStatus) {
         database.ref('rooms/' + roomId).update({ isSecret: !currentStatus }).then(() => {
             alert(!currentStatus ? "Комната ҳолати Невидимка гирифт! Он дигар дар Главни ва кофтуков намебарояд." : "Комната барои ҳама намоён шуд!");
@@ -508,7 +520,6 @@ document.addEventListener("click", function(event) {
         database.ref('rooms/' + roomId).update({ onlyAdminCanWrite: !currentStatus });
     }
 
-    // ИСЛОҲШУДА БАРОИ ОН КИ ДАР КОФТУКОВ ХОНАҲОИ НЕВИДИМКА НАБАРОЯНД
     function searchFunction() {
         let input = document.getElementById('search-input').value.trim();
         let userResultBox = document.getElementById('search-user-result');
@@ -543,7 +554,6 @@ document.addEventListener("click", function(event) {
                 let card = cards[index];
                 if(!card) return;
                 
-                // Шарт: Агар комната Невидимка бошад ва соҳибаш мо набошем, дар ҷустуҷӯ ҳам нишон дода нашавад!
                 if(room.isSecret && room.creatorPhone !== userData.phone) {
                     card.style.display = "none";
                 } else {
@@ -628,6 +638,19 @@ document.addEventListener("click", function(event) {
                         totalUnreadCount += unreadForThisRoom;
                         messagesArray.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
                         let lastMsg = messagesArray[messagesArray.length - 1];
+
+                        // ЛОГИКАИ НАВОХТАНИ САДОИ ПАЁМАК:
+                        if (lastMsg) {
+                            let isMyOwnMessage = (lastMsg.phone === userData.phone);
+                            let isUserInsideThisChat = (roomId === currentChatRoomId);
+                            // Паём дар 2.5 сонияи охир омада бошад (паёми нав бошад)
+                            let isRecentMessage = (Date.now() - (lastMsg.timestamp || 0) < 2500);
+
+                            if (!isMyOwnMessage && !isUserInsideThisChat && isRecentMessage) {
+                                msgSound.currentTime = 0;
+                                msgSound.play().catch(err => console.log("Браузер автоматикӣ садоро манъ кард:", err));
+                            }
+                        }
 
                         activeChats.push({
                             roomId: roomId,
@@ -838,5 +861,14 @@ document.addEventListener("click", function(event) {
         alert("Истинод барои нусхабардорӣ: " + (link || "Ҳанӯз омода нест"));
     }
 </script>
+
+
+
+
+
+
+
+
+
 </body>
 </html>
