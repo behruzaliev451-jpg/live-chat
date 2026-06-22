@@ -227,15 +227,23 @@
 
   // Ба тамоми саҳифа мегӯем, ки ҳар як кликро назорат кунад
 document.addEventListener("click", function(event) {
-    // Тугмаи зершударо меёбад
-    let targetButton = event.target.closest("button");
-    
-    // Агар тугма зер шуда бошад ва дар дарунаш калимаи "Назад" (ё нишони ⬅️) дошта бошад, садоро манъ мекунад
-    if (targetButton && (targetButton.innerText.includes("Назад") || targetButton.innerText.includes("⬅️") || targetButton.classList.contains("no-sound"))) {
-        return; // Функсияро қатъ мекунад ва садо навохта намешавад
+    // 1. САНҶИШИ РАВЗАНАИ ВОРИДШАВӢ:
+    // Агар клик дар даруни равзанаи воридшавӣ (#auth-screen) шуда бошад, ҳеҷ садое нанавоз
+    if (event.target.closest("#auth-screen")) {
+        return; 
     }
 
-    // Агар корбар тугма ё картаҳои чатро зер кунад, садо навохта мешавад
+    // 2. САНҶИШИ ТУГМАИ НАЗАД (⬅️):
+    let targetButton = event.target.closest("button");
+    if (targetButton) {
+        let buttonText = targetButton.innerText;
+        // Агар тугма нишони ⬅️ ё калимаи "Назад" дошта бошад, садо нанавоз
+        if (buttonText.includes("⬅️") || buttonText.includes("Назад")) {
+            return; 
+        }
+    }
+
+    // 3. БАРОИ ДИГАР ТУГМАҲО ВА ЧАТҲО САДО НАВОХТА МЕШАВАД:
     if (targetButton || event.target.closest(".item-card") || event.target.closest(".searched-user-box")) {
         clickSound.currentTime = 0; // Садоро аз аввал омода мекунад
         clickSound.play().catch(err => console.log("Браузер иҷозати садо надод:", err));
