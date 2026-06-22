@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Чат бо дизайни махсуси галчкаҳо ва ҳисобкунак</title>
+    <title>Чат бо функсияи Невидимка</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: #f5f7fb; display: flex; justify-content: center; align-items: center; height: 100vh; height: 100dvh; overflow: hidden; }
@@ -41,17 +41,10 @@
         .msg-wrapper.other .msg-bubble { background: white; color: #333; border-bottom-left-radius: 4px; }
          
         .msg-text { font-size: 15px; word-break: break-word; overflow-wrap: break-word; line-height: 20px; }
-         
-        .top-ticks { position: absolute; top: 4px; left: 10px; font-size: 11px; font-weight: bold; }
-        .top-ticks.delivered { color: rgba(255, 255, 255, 0.6); }
-        .top-ticks.read { color: #40c4ff; }
 
         .msg-footer { position: absolute; bottom: 4px; right: 10px; display: flex; align-items: center; gap: 8px; font-size: 11px; }
         .msg-wrapper.me .msg-footer { color: rgba(255, 255, 255, 0.75); }
         .msg-wrapper.other .msg-footer { color: #a0aec0; }
-
-        .delete-btn { background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 11px; filter: grayscale(0); line-height: 1; opacity: 0.8; }
-        .delete-btn:hover { opacity: 1; }
 
         .badge { background: #ff3b30; color: white; border-radius: 10px; padding: 2px 7px; font-size: 11px; font-weight: bold; display: inline-block; min-width: 18px; text-align: center; }
         .nav-item { position: relative; }
@@ -83,7 +76,6 @@
         .profile-avatar-big { width: 65px; height: 65px; border-radius: 50%; background: #e2e8f0; object-fit: cover; }
         .lock-icon { font-size: 18px; margin-left: auto; }
 
-        /* МЕНЮИ ИДОРАКУНИИ НАВ */
         .manage-btn { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px; font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 5px; }
         .manage-menu { display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px; margin-top: 5px; animation: fadeIn 0.2s ease; }
         .menu-item { width: 100%; text-align: left; padding: 8px 12px; border: none; background: none; font-size: 13px; font-weight: 500; color: #334155; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; }
@@ -97,6 +89,7 @@
         .nav-item.active { color: #667eea; font-weight: 600; }
          
         .user-profile-box { background: linear-gradient(135deg, #f6f8fb, #eef2f7); padding: 15px; border-radius: 14px; margin-bottom: 15px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 15px; }
+        .searched-user-box { display: flex; align-items: center; gap: 12px; background: #e0e7ff; padding: 12px; border-radius: 12px; margin-bottom: 12px; cursor: pointer; }
         hr { border: 0; height: 1px; background: #e2e8f0; margin: 20px 0; }
     </style>
 </head>
@@ -404,7 +397,7 @@
         });
     }
 
-    // ИСЛОҲШУДА БО ТУГМАИ НАВИ "ИДОРАКУНӢ" ВА МЕНЮИ ОН
+    // ИСЛОҲШУДА БАРОИ ФУНКСИЯИ НЕВИДИМКА (ГӮШ КАРДАН ВА СУЗУРХ КАРДАНИ КАРТАҲО)
     function renderRoomsUI() {
         let myRoomsHTML = ""; 
         let allRoomsHTML = "";
@@ -413,38 +406,44 @@
             if(filterByCreatorPhone && room.creatorPhone !== filterByCreatorPhone) return;
             let lockIcon = room.pass ? "🔒" : "🔓";
 
-            allRoomsHTML += `
-                <div class="item-card" onclick="tryEnterRoom('${room.id}')">
-                    <div class="card-main-info">
-                        <img src="${room.img || defaultAvatar}" class="room-avatar">
-                        <div class="card-info" style="flex:1; margin-left:10px;">
-                            <b>🏢 ${room.name}</b>
-                            <span style="font-size:11px; color:gray; display:block;">Аз: ${room.creatorName}</span>
+            // Агар комната Невидимка бошад, он дар Главни барои дигарон намоиш дода намешавад!
+            if (!room.isSecret || room.creatorPhone === userData.phone) {
+                let hiddenBadge = room.isSecret ? " <span style='color:#6366f1; font-size:11px;'>[🕵️‍♂️ Невидимка]</span>" : "";
+                allRoomsHTML += `
+                    <div class="item-card" onclick="tryEnterRoom('${room.id}')">
+                        <div class="card-main-info">
+                            <img src="${room.img || defaultAvatar}" class="room-avatar">
+                            <div class="card-info" style="flex:1; margin-left:10px;">
+                                <b>🏢 ${room.name} ${hiddenBadge}</b>
+                                <span style="font-size:11px; color:gray; display:block;">Аз: ${room.creatorName}</span>
+                            </div>
+                            <span class="lock-icon">${lockIcon}</span>
                         </div>
-                        <span class="lock-icon">${lockIcon}</span>
-                    </div>
-                </div>`;
+                    </div>`;
+            }
 
             if(room.creatorPhone === userData.phone) {
-                let lockText = room.isLocked ? "🔓 Кушодани қуттӣ" : "🔒 Маҳкам кардани қуттӣ";
+                let secretText = room.isSecret ? "👁️ Намоён кардан дар главни" : "🕵️‍♂️ Танзими Невидимка";
                 let adminWriteText = room.onlyAdminCanWrite ? "👥 Ба ҳама иҷозат додан" : "👤 Танҳо ман нависам";
 
                 myRoomsHTML += `
                     <div class="item-card" id="my-room-${room.id}">
                         <div class="card-main-info" onclick="toggleManageMenu('${room.id}')">
                             <img src="${room.img || defaultAvatar}" class="room-avatar">
-                            <div class="card-info" style="flex:1; margin-left:10px;"><b>🏢 ${room.name}</b></div>
+                            <div class="card-info" style="flex:1; margin-left:10px;">
+                                <b>🏢 ${room.name} ${room.isSecret ? "🕵️‍♂️" : ""}</b>
+                            </div>
                             <span class="lock-icon">${lockIcon}</span>
                         </div>
                         
-                        <button class="manage-btn" onclick="toggleManageMenu('${room.id}')">⚙️ Идоракунӣ</button>
+                        <button class="manage-btn" onclick="toggleManageMenu('${room.id}')">⚙️ Ипоракунӣ</button>
                         
                         <div class="manage-menu" id="menu-${room.id}">
                             <button class="menu-item" onclick="tryEnterRoom('${room.id}')">🚪 Ворид шудан</button>
                             <button class="menu-item" onclick="shareRoom('${room.link || ''}')">🔗 Поделиться</button>
                             <button class="menu-item" onclick="editRoomInfo('${room.id}')">✏️ Таҳрири комната</button>
                             <button class="menu-item" onclick="clearRoomChat('${room.id}')">🧹 Пок кардани чат</button>
-                            <button class="menu-item" onclick="toggleRoomLock('${room.id}', ${!!room.isLocked})">${lockText}</button>
+                            <button class="menu-item" onclick="toggleRoomSecret('${room.id}', ${!!room.isSecret})">${secretText}</button>
                             <button class="menu-item" onclick="toggleAdminWriteOnly('${room.id}', ${!!room.onlyAdminCanWrite})">${adminWriteText}</button>
                             <button class="menu-item danger" onclick="deleteRoom('${room.id}')">🗑️ Нест кардани комната</button>
                         </div>
@@ -456,7 +455,6 @@
         document.getElementById('all-rooms-list').innerHTML = allRoomsHTML || "<p style='color:gray; font-size:14px;'>Ҳеҷ комнатае мавҷуд нест.</p>";
     }
 
-    // ФУНКСИЯҲОИ НАВ БАРОИ МЕНЮИ ИДОРАКУНӢ
     function toggleManageMenu(roomId) {
         let menu = document.getElementById(`menu-${roomId}`);
         if(menu.style.display === "block") {
@@ -490,22 +488,25 @@
         }
     }
 
-    function toggleRoomLock(roomId, currentStatus) {
-        database.ref('rooms/' + roomId).update({ isLocked: !currentStatus });
+    // ТУГМАИ НАВИ НЕВИДИМКА
+    function toggleRoomSecret(roomId, currentStatus) {
+        database.ref('rooms/' + roomId).update({ isSecret: !currentStatus }).then(() => {
+            alert(!currentStatus ? "Комната ҳолати Невидимка гирифт! Он дигар дар Главни ва кофтуков намебарояд." : "Комната барои ҳама намоён шуд!");
+        });
     }
 
     function toggleAdminWriteOnly(roomId, currentStatus) {
         database.ref('rooms/' + roomId).update({ onlyAdminCanWrite: !currentStatus });
     }
 
+    // ИСЛОҲШУДА БАРОИ ОН КИ ДАР КОФТУКОВ ХОНАҲОИ НЕВИДИМКА НАБАРОЯНД
     function searchFunction() {
         let input = document.getElementById('search-input').value.trim();
         let userResultBox = document.getElementById('search-user-result');
         
         if(!input) {
             userResultBox.innerHTML = "";
-            let cards = document.getElementById('all-rooms-list').getElementsByClassName('item-card');
-            for (let i = 0; i < cards.length; i++) { cards[i].style.display = "flex"; }
+            renderRoomsUI();
             return;
         }
 
@@ -528,9 +529,18 @@
         } else {
             userResultBox.innerHTML = "";
             let cards = document.getElementById('all-rooms-list').getElementsByClassName('item-card');
-            for (let i = 0; i < cards.length; i++) {
-                cards[i].style.display = cards[i].innerText.toLowerCase().includes(input.toLowerCase()) ? "flex" : "none";
-            }
+            
+            roomsData.forEach((room, index) => {
+                let card = cards[index];
+                if(!card) return;
+                
+                // Шарт: Агар комната Невидимка бошад ва соҳибаш мо набошем, дар ҷустуҷӯ ҳам нишон дода нашавад!
+                if(room.isSecret && room.creatorPhone !== userData.phone) {
+                    card.style.display = "none";
+                } else {
+                    card.style.display = card.innerText.toLowerCase().includes(input.toLowerCase()) ? "flex" : "none";
+                }
+            });
         }
     }
 
@@ -592,7 +602,7 @@
                 Object.keys(allMessages).forEach(roomId => {
                     let room = roomsData.find(r => r.id === roomId);
                     
-                    if(room && room.creatorPhone === userData.phone) {
+                    if(room && (room.creatorPhone === userData.phone || Object.values(allMessages[roomId]).some(m => m.phone === userData.phone))) {
                         let messagesArray = Object.values(allMessages[roomId]);
                         let unreadForThisRoom = 0;
 
@@ -607,7 +617,6 @@
                         }
 
                         totalUnreadCount += unreadForThisRoom;
-
                         messagesArray.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
                         let lastMsg = messagesArray[messagesArray.length - 1];
 
@@ -659,7 +668,6 @@
         document.getElementById('active-chats-list').innerHTML = activeListHTML || "<p style='color:gray; font-size:14px;'>Чатҳои фаъол мавҷуд нестанд.</p>";
     }
 
-    // ИСЛОҲШУДА БАРОИ ОН КИ ШАРТҲОИ МАҲКАМ ШУДАН ДАР ҲОЛАТИ ЗИНДА (REALTIME) КОР КУНАНД
     function openChat(name, img, roomId) {
         currentChatRoomId = roomId;
         document.getElementById('chat-title').innerText = name;
@@ -668,7 +676,6 @@
         let messagesList = document.getElementById('chat-messages-list');
         messagesList.innerHTML = ""; 
 
-        // Гӯш кардани ҳолати комната (маҳкам шудан ё танҳо админ навиштан)
         database.ref('rooms/' + roomId).on('value', (roomSnapshot) => {
             let currentRoom = roomSnapshot.val();
             let inputZone = document.getElementById('chat-input-zone');
@@ -676,16 +683,13 @@
             if(currentRoom) {
                 let isCurrentAdmin = currentRoom.creatorPhone === userData.phone;
 
-                if(currentRoom.isLocked) {
-                    inputZone.innerHTML = `<div class="chat-blocked-notice">🔒 Қуттии паёмакнависии ин чат аз ҷониби админ маҳкам шудааст!</div>`;
-                } else if(currentRoom.onlyAdminCanWrite && !isCurrentAdmin) {
+                if(currentRoom.onlyAdminCanWrite && !isCurrentAdmin) {
                     inputZone.innerHTML = `<div class="chat-blocked-notice">🔏 Танҳо админ метавонад дар ин чат паём нависад!</div>`;
                 } else {
                     inputZone.innerHTML = `
                         <textarea id="message-input" placeholder="Паёмак..." oninput="autoGrow(this)"></textarea>
                         <button class="btn" onclick="sendMessage()" style="width: auto; padding: 10px 20px; flex-shrink: 0; height: 40px; border-radius: 18px;">Фиристодан</button>`;
                     
-                    // Илова кардани ҳодисаи пахши Enter ба тегҳои нави дарунӣ
                     document.getElementById('message-input').addEventListener('keydown', function(e) {
                         if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
@@ -754,7 +758,7 @@
 
     function sendMessage() {
         let input = document.getElementById('message-input');
-        if(!input) return; // агар блок бошад
+        if(!input) return; 
         let text = input.value.trim();
         if(!text || !currentChatRoomId) return;
 
@@ -792,7 +796,7 @@
             creatorName: userData.name,
             img: defaultAvatar,
             timestamp: firebase.database.ServerValue.TIMESTAMP,
-            isLocked: false,
+            isSecret: false,
             onlyAdminCanWrite: false
         };
 
