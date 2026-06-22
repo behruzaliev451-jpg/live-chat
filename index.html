@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Чат бо функсияи Невидимка ва Нусхаи Линк</title>
+    <title>Чат бо функсияи Невидимка</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-color: #f5f7fb; display: flex; justify-content: center; align-items: center; height: 100vh; height: 100dvh; overflow: hidden; }
@@ -227,14 +227,6 @@
         if(savedUser) {
             userData = JSON.parse(savedUser);
             enterApp();
-            
-            let urlParams = new URLSearchParams(window.location.search);
-            let roomIdFromLink = urlParams.get('room');
-            if(roomIdFromLink) {
-                setTimeout(() => {
-                    tryEnterRoom(roomIdFromLink);
-                }, 1500);
-            }
         }
     }
 
@@ -405,6 +397,7 @@
         });
     }
 
+    // ИСЛОҲШУДА БАРОИ ФУНКСИЯИ НЕВИДИМКА (ГӮШ КАРДАН ВА СУЗУРХ КАРДАНИ КАРТАҲО)
     function renderRoomsUI() {
         let myRoomsHTML = ""; 
         let allRoomsHTML = "";
@@ -413,6 +406,7 @@
             if(filterByCreatorPhone && room.creatorPhone !== filterByCreatorPhone) return;
             let lockIcon = room.pass ? "🔒" : "🔓";
 
+            // Агар комната Невидимка бошад, он дар Главни барои дигарон намоиш дода намешавад!
             if (!room.isSecret || room.creatorPhone === userData.phone) {
                 let hiddenBadge = room.isSecret ? " <span style='color:#6366f1; font-size:11px;'>[🕵️‍♂️ Невидимка]</span>" : "";
                 allRoomsHTML += `
@@ -442,11 +436,11 @@
                             <span class="lock-icon">${lockIcon}</span>
                         </div>
                         
-                        <button class="manage-btn" onclick="toggleManageMenu('${room.id}')">⚙️ Идоракунӣ</button>
+                        <button class="manage-btn" onclick="toggleManageMenu('${room.id}')">⚙️ Ипоракунӣ</button>
                         
                         <div class="manage-menu" id="menu-${room.id}">
                             <button class="menu-item" onclick="tryEnterRoom('${room.id}')">🚪 Ворид шудан</button>
-                            <button class="menu-item" onclick="shareRoom('${room.id}')">🔗 Поделиться</button>
+                            <button class="menu-item" onclick="shareRoom('${room.link || ''}')">🔗 Поделиться</button>
                             <button class="menu-item" onclick="editRoomInfo('${room.id}')">✏️ Таҳрири комната</button>
                             <button class="menu-item" onclick="clearRoomChat('${room.id}')">🧹 Пок кардани чат</button>
                             <button class="menu-item" onclick="toggleRoomSecret('${room.id}', ${!!room.isSecret})">${secretText}</button>
@@ -494,6 +488,7 @@
         }
     }
 
+    // ТУГМАИ НАВИ НЕВИДИМКА
     function toggleRoomSecret(roomId, currentStatus) {
         database.ref('rooms/' + roomId).update({ isSecret: !currentStatus }).then(() => {
             alert(!currentStatus ? "Комната ҳолати Невидимка гирифт! Он дигар дар Главни ва кофтуков намебарояд." : "Комната барои ҳама намоён шуд!");
@@ -504,6 +499,7 @@
         database.ref('rooms/' + roomId).update({ onlyAdminCanWrite: !currentStatus });
     }
 
+    // ИСЛОҲШУДА БАРОИ ОН КИ ДАР КОФТУКОВ ХОНАҲОИ НЕВИДИМКА НАБАРОЯНД
     function searchFunction() {
         let input = document.getElementById('search-input').value.trim();
         let userResultBox = document.getElementById('search-user-result');
@@ -538,6 +534,7 @@
                 let card = cards[index];
                 if(!card) return;
                 
+                // Шарт: Агар комната Невидимка бошад ва соҳибаш мо набошем, дар ҷустуҷӯ ҳам нишон дода нашавад!
                 if(room.isSecret && room.creatorPhone !== userData.phone) {
                     card.style.display = "none";
                 } else {
@@ -595,7 +592,6 @@
         return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
     }
 
-    // ИСЛОҲШУДАИ АСОСӢ: МАНТИҚИ МАХФИЯТИ ЧАТҲО ВА НАВИСАНДАГОН
     function listenToUnreadMessages() {
         database.ref('messages').on('value', (snapshot) => {
             let allMessages = snapshot.val();
@@ -606,8 +602,7 @@
                 Object.keys(allMessages).forEach(roomId => {
                     let room = roomsData.find(r => r.id === roomId);
                     
-                    // ШАРТИ КАТЪӢ: Танҳо агар КОРБАР соҳиби комната (Админ) бошад, ба бахши чатҳои фаъол илова мешавад
-                    if(room && room.creatorPhone === userData.phone) {
+                    if(room && (room.creatorPhone === userData.phone || Object.values(allMessages[roomId]).some(m => m.phone === userData.phone))) {
                         let messagesArray = Object.values(allMessages[roomId]);
                         let unreadForThisRoom = 0;
 
@@ -689,7 +684,7 @@
                 let isCurrentAdmin = currentRoom.creatorPhone === userData.phone;
 
                 if(currentRoom.onlyAdminCanWrite && !isCurrentAdmin) {
-                    inputZone.innerHTML = `<div class="chat-blocked-notice">🔏 Танҳо admin метавонад дар ин чат паём нависад!</div>`;
+                    inputZone.innerHTML = `<div class="chat-blocked-notice">🔏 Танҳо админ метавонад дар ин чат паём нависад!</div>`;
                 } else {
                     inputZone.innerHTML = `
                         <textarea id="message-input" placeholder="Паёмак..." oninput="autoGrow(this)"></textarea>
@@ -716,51 +711,38 @@
                 let messagesArray = Object.values(messages);
                 messagesArray.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
 
-                database.ref('rooms/' + roomId).once('value', (roomSnap) => {
-                    let room = roomSnap.val();
-                    let isCurrentAdmin = room && room.creatorPhone === userData.phone;
+                messagesArray.forEach(m => {
+                    let msgDateStr = formatDateDivider(m.timestamp);
+                    if(msgDateStr !== lastDateStr) {
+                        messagesHTML += `<div class="date-divider"><span>${msgDateStr}</span></div>`;
+                        lastDateStr = msgDateStr;
+                    }
 
-                    messagesArray.forEach(m => {
-                        // ШАРТИ КАТЪӢ БАРОИ КОРБАРОНИ БЕГОНА:
-                        // Агар ман админ набошам ва паём аз ман набошад ва паём аз админ ҳам набошад -> умуман нишон надеҳ (пинҳон кун)
-                        if (!isCurrentAdmin && m.phone !== userData.phone && m.phone !== room.creatorPhone) {
-                            return; 
-                        }
+                    let isMe = m.phone === userData.phone;
+                    let wrapperClass = isMe ? "me" : "other";
 
-                        let msgDateStr = formatDateDivider(m.timestamp);
-                        if(msgDateStr !== lastDateStr) {
-                            messagesHTML += `<div class="date-divider"><span>${msgDateStr}</span></div>`;
-                            lastDateStr = msgDateStr;
-                        }
+                    if(!isMe && (!m.seenBy || !m.seenBy[userData.phone])) {
+                        database.ref(`messages/${roomId}/${m.id}/seenBy/${userData.phone}`).set(true);
+                    }
 
-                        let isMe = m.phone === userData.phone;
-                        let wrapperClass = isMe ? "me" : "other";
-
-                        if(!isMe && (!m.seenBy || !m.seenBy[userData.phone])) {
-                            database.ref(`messages/${roomId}/${m.id}/seenBy/${userData.phone}`).set(true);
-                        }
-
-                        messagesHTML += `
-                            <div class="msg-wrapper ${wrapperClass}">
-                                <img src="${m.userImg || defaultAvatar}" class="msg-avatar">
-                                <div class="msg-body">
-                                    <span class="msg-username">${m.username}</span>
-                                    <div class="msg-bubble">
-                                        <div class="msg-text">${m.text}</div>
-                                        <div class="msg-footer">
-                                            <span>${formatTime(m.timestamp)}</span>
-                                        </div>
+                    messagesHTML += `
+                        <div class="msg-wrapper ${wrapperClass}">
+                            <img src="${m.userImg || defaultAvatar}" class="msg-avatar">
+                            <div class="msg-body">
+                                <span class="msg-username">${m.username}</span>
+                                <div class="msg-bubble">
+                                    <div class="msg-text">${m.text}</div>
+                                    <div class="msg-footer">
+                                        <span>${formatTime(m.timestamp)}</span>
                                     </div>
                                 </div>
-                            </div>`;
-                    });
-                    
-                    messagesList.innerHTML = messagesHTML;
-                    messagesList.scrollTop = messagesList.scrollHeight; 
+                            </div>
+                        </div>`;
                 });
-            } else {
-                messagesList.innerHTML = messagesHTML;
             }
+            
+            messagesList.innerHTML = messagesHTML;
+            messagesList.scrollTop = messagesList.scrollHeight; 
         });
     }
 
@@ -843,14 +825,8 @@
         }
     }
 
-    function shareRoom(roomId) {
-        let roomLink = window.location.origin + window.location.pathname + "?room=" + roomId;
-
-        navigator.clipboard.writeText(roomLink).then(() => {
-            alert("🔗 Истинод (ссылка)-и комната нусхабардорӣ шуд! Шумо метавонед онро ба дӯстонатон фиристед.");
-        }).catch(err => {
-            prompt("Истинодро нусхабардорӣ кунед:", roomLink);
-        });
+    function shareRoom(link) {
+        alert("Истинод барои нусхабардорӣ: " + (link || "Ҳанӯз омода нест"));
     }
 </script>
 </body>
