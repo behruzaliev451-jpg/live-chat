@@ -225,14 +225,22 @@
     // Садои паёмаки навро аз суроғаи GitHub омода мекунем
     const msgSound = new Audio("https://raw.githubusercontent.com/behruzaliev451-jpg/live-chat/main/chat.mp3");
 
-    // Ба тамоми саҳифа мегӯем, ки ҳар як кликро назорат кунад
-    document.addEventListener("click", function(event) {
-        // Агар корбар тугма ё картаҳои чатро зер кунад, садо навохта мешавад
-        if (event.target.closest("button") || event.target.closest(".item-card") || event.target.closest(".searched-user-box")) {
-            clickSound.currentTime = 0; // Садоро аз аввал омода мекунад
-            clickSound.play().catch(err => console.log("Браузер иҷозати садо надод:", err));
-        }
-    });
+  // Ба тамоми саҳифа мегӯем, ки ҳар як кликро назорат кунад
+document.addEventListener("click", function(event) {
+    // Тугмаи зершударо меёбад
+    let targetButton = event.target.closest("button");
+    
+    // Агар тугма зер шуда бошад ва дар дарунаш калимаи "Назад" (ё нишони ⬅️) дошта бошад, садоро манъ мекунад
+    if (targetButton && (targetButton.innerText.includes("Назад") || targetButton.innerText.includes("⬅️") || targetButton.classList.contains("no-sound"))) {
+        return; // Функсияро қатъ мекунад ва садо навохта намешавад
+    }
+
+    // Агар корбар тугма ё картаҳои чатро зер кунад, садо навохта мешавад
+    if (targetButton || event.target.closest(".item-card") || event.target.closest(".searched-user-box")) {
+        clickSound.currentTime = 0; // Садоро аз аввал омода мекунад
+        clickSound.play().catch(err => console.log("Браузер иҷозати садо надод:", err));
+    }
+});
 
     let currentChatRoomId = "";
     let roomsData = []; 
