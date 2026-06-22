@@ -837,6 +837,43 @@ document.addEventListener("click", function(event) {
     function shareRoom(link) {
         alert("Истинод барои нусхабардорӣ: " + (link || "Ҳанӯз омода нест"));
     }
+	// 1. Садои навро барои паёми нав омода мекунем (суроғаи мустақим)
+const messageSound = new Audio("https://raw.githubusercontent.com/behruzaliev451-jpg/live-chat/main/chat.mp3");
+
+// Ин тағйирёбанда барои нигоҳ доштани миқдори қаблии паёмҳо хидмат мекунад
+let lastUnreadCount = 0;
+
+function listenToUnreadMessages() {
+    // Фарз мекунем, ки шумо паёмҳоро аз базаи Firebase мехонед
+    // Ин танҳо як мисоли мантиқ аст, ки дар барномаи шумо кор мекунад:
+    database.ref('messages').on('value', (snapshot) => {
+        
+        let currentUnreadCount = 0;
+        
+        // --- ДАР ИН ҶО МАНТИҚИ ҲИСОБ КАРДАНИ ПАЁМҲОИ ХОНДАНАШУДАИ ШУМО ДАРД ---
+        // Масалан, пас аз ҳисоб кардан currentUnreadCount соҳиби рақами нав мешавад (1, 2, 3...)
+        
+        // Танзими визуалии тугма (Нишони сурх)
+        const badge = document.getElementById('total-unread-badge');
+        if (currentUnreadCount > 0) {
+            badge.innerText = currentUnreadCount;
+            badge.style.display = 'block'; // Нишони сурхро намоён мекунад
+        } else {
+            badge.innerText = '0';
+            badge.style.display = 'none';  // Агар 0 бошад, пинҳон мекунад
+        }
+
+        // ШАРТИ АСОСӢ БАРОИ САДО: 
+        // Агар рақами ҳозира аз рақами қаблӣ калон бошад (яъне паёми нав илова шуд)
+        if (currentUnreadCount > lastUnreadCount) {
+            messageSound.currentTime = 0; // Садоро аз аввал омода мекунад
+            messageSound.play().catch(err => console.log("Браузер иҷозати садо надод:", err));
+        }
+
+        // Миқдори ҳозираро барои санҷиши навбатӣ ҳифз мекунем
+        lastUnreadCount = currentUnreadCount;
+    });
+}
 </script>
 </body>
 </html>
