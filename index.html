@@ -46,56 +46,14 @@
         .msg-wrapper.me .msg-footer { color: rgba(255, 255, 255, 0.75); }
         .msg-wrapper.other .msg-footer { color: #a0aec0; }
 
-        /* ====== ГАЛОЧКАҲОИ WHATSAPP ====== */
-        .msg-ticks {
-            display: inline-flex;
-            align-items: center;
-            margin-left: 2px;
-            position: relative;
-            height: 14px;
-        }
-
-        /* Галочкаи якум (ҳамеша) */
-        .tick {
-            display: inline-block;
-            width: 10px;
-            height: 14px;
-            position: relative;
-        }
-        .tick::after {
-            content: '';
-            display: block;
-            width: 5px;
-            height: 9px;
-            border-right: 2px solid currentColor;
-            border-bottom: 2px solid currentColor;
-            transform: rotate(40deg) skewX(-5deg);
-            position: absolute;
-            top: 1px;
-            left: 1px;
-        }
-
-        /* Ду галочка — галочкаи дуюм каме ба чап меравад */
-        .tick-double {
-            display: inline-flex;
-            align-items: center;
-        }
-        .tick-double .tick:nth-child(2) {
-            margin-left: -5px;
-        }
-
-        /* Рангҳо аз рӯи ҳолат */
-
-        /* Фиристода шуд — як галочкаи сафед */
+        .msg-ticks { display: inline-flex; align-items: center; margin-left: 2px; position: relative; height: 14px; }
+        .tick { display: inline-block; width: 10px; height: 14px; position: relative; }
+        .tick::after { content: ''; display: block; width: 5px; height: 9px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(40deg) skewX(-5deg); position: absolute; top: 1px; left: 1px; }
+        .tick-double { display: inline-flex; align-items: center; }
+        .tick-double .tick:nth-child(2) { margin-left: -5px; }
         .ticks-sent { color: rgba(255,255,255,0.7); }
-
-        /* Расид — ду галочкаи хокистарӣ */
         .ticks-delivered { color: rgba(255,255,255,0.7); }
-
-        /* Хонда шуд — ду галочкаи кабуд */
         .ticks-read .tick { color: #a8d5f7; }
-
-        /* ====== ОХИРИ ГАЛОЧКАҲО ====== */
 
         .badge { background: #ff3b30; color: white; border-radius: 10px; padding: 2px 7px; font-size: 11px; font-weight: bold; display: inline-block; min-width: 18px; text-align: center; }
         .nav-item { position: relative; }
@@ -117,7 +75,7 @@
         .btn-danger { background: linear-gradient(135deg, #f56565 0%, #c53030 100%); color: white; margin-top: 8px; }
         .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; width: auto; display: inline-block; margin-top: 10px; }
 
-        .create-room-box, .edit-profile-box { display: none; background: white; padding: 15px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-top: 10px; animation: slideDown 0.2s ease-in-out; }
+        .create-room-box, .edit-profile-box, .edit-room-box { display: none; background: white; padding: 15px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-top: 10px; animation: slideDown 0.2s ease-in-out; }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
         .item-card { background: white; padding: 14px; margin-bottom: 12px; border-radius: 14px; border-left: 5px solid #667eea; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 10px; cursor: pointer; position: relative; }
@@ -143,7 +101,6 @@
         .searched-user-box { display: flex; align-items: center; gap: 12px; background: #e0e7ff; padding: 12px; border-radius: 12px; margin-bottom: 12px; cursor: pointer; }
         hr { border: 0; height: 1px; background: #e2e8f0; margin: 20px 0; }
 
-        /* ====== СТИЛҲОИ НАВ БАРОИ РАВЗАНАҲОИ МОДАЛИИ СУПЕР ЗЕБО ====== */
         .custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 9999; animation: modalFadeIn 0.25s ease-out; }
         .custom-modal-box { width: 90%; max-width: 360px; background: white; border-radius: 20px; padding: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); text-align: center; animation: modalScaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .custom-modal-title { font-size: 18px; font-weight: 700; color: #1a202c; margin-bottom: 10px; }
@@ -235,6 +192,23 @@
             <button class="btn" onclick="createRoom()">Сохтан</button>
             <button class="btn btn-secondary" onclick="toggleRoomForm(false)">Баргаштан</button>
         </div>
+
+        <!-- ФОРМАИ НАВИ ТАҲРИРИ КОМНАТА -->
+        <div class="edit-room-box" id="edit-room-panel">
+            <h4 style="margin-bottom: 5px; color: #4a5568;">Таҳрири комната</h4>
+            <input type="hidden" id="edit-room-id">
+            <input type="text" id="edit-room-name" placeholder="Номи нави комната">
+            
+            <div class="password-container">
+                <input type="password" id="edit-room-pass" placeholder="Рамзи нави комната (ихтиёри)">
+                <button type="button" class="toggle-password" onclick="togglePasswordVisibility('edit-room-pass', this)">👁️</button>
+            </div>
+            
+            <label style="font-size: 13px; color: gray; display:block; margin-top:8px;">Расми нави комната:</label>
+            <input type="file" id="edit-room-icon" accept="image/*" style="margin-bottom: 10px; width: 100%;">
+            <button class="btn" onclick="saveRoomChangesToServer()">Ҳифз кардани тағйирот</button>
+            <button class="btn btn-secondary" onclick="closeRoomEditPanel()">Баргаштан</button>
+        </div>
          
         <hr>
         <h3 style="margin-bottom: 10px;">📦 Комнатаҳои сохтаи ман</h3>
@@ -302,7 +276,6 @@
      
     let userData = { name: "", phone: "", password: "", img: defaultAvatar };
 
-    // ====== СИСТЕМАИ ФУНКСИЯҲОИ НАВ БАРОИ РАВЗАНАҲОИ МОДАЛИИ ЗЕБО ======
     function showCustomAlert(text, title = "Огоҳӣ") {
         return new Promise((resolve) => {
             const modal = document.getElementById('custom-modal');
@@ -376,7 +349,6 @@
             modal.style.display = 'flex';
         });
     }
-    // ====== ОХИРИ СИСТЕМАИ РАВЗАНАҲОИ МОДАЛИИ НАВ ======
 
     window.onload = function() {
         const msgInput = document.getElementById('message-input');
@@ -609,7 +581,7 @@
                         
                         <div class="manage-menu" id="menu-${room.id}">
                             <button class="menu-item" onclick="tryEnterRoom('${room.id}')">🚪 Ворид шудан</button>
-                            <button class="menu-item" onclick="editRoomInfo('${room.id}')">✏️ Таҳрири комната</button>
+                            <button class="menu-item" onclick="openRoomEditPanel('${room.id}')">✏️ Таҳрири комната</button>
                             <button class="menu-item" onclick="clearRoomChat('${room.id}')">🧹 Пок кардани чат</button>
                             <button class="menu-item" onclick="toggleRoomSecret('${room.id}', ${!!room.isSecret})">${secretText}</button>
                             <button class="menu-item" onclick="toggleAdminWriteOnly('${room.id}', ${!!room.onlyAdminCanWrite})">${adminWriteText}</button>
@@ -637,23 +609,57 @@
         }
     }
 
-    async function editRoomInfo(roomId) {
+    /* ====== ФУНКСИЯҲОИ НАВ БАРОИ ТАҲРИРИ НОМ, РАМЗ ВА РАСМИ КОМНАТА ====== */
+    function openRoomEditPanel(roomId) {
         let room = roomsData.find(r => r.id === roomId);
         if(!room) return;
+
+        document.getElementById('edit-room-id').value = roomId;
+        document.getElementById('edit-room-name').value = room.name;
+        document.getElementById('edit-room-pass').value = room.pass || "";
+        document.getElementById('edit-room-icon').value = ""; 
         
-        let newName = await showCustomPrompt("Номи нави комнатаро ворид кунед:", room.name, "Таҳрири Ном");
-        if(newName === null) return;
-        newName = newName.trim();
-        if(!newName) { showCustomAlert("Ном наметавонад холӣ бошад!", "Хатогӣ"); return; }
-
-        let newPass = await showCustomPrompt("Рамзи нави комнатаро ворид кунед (агар нахоҳед, холӣ гузоред):", room.pass || "", "Таҳрири Рамз");
-        if(newPass === null) return;
-
-        database.ref('rooms/' + roomId).update({
-            name: newName,
-            pass: newPass.trim()
-        }).then(() => { showCustomAlert("Маълумоти комната таҳрир шуд!", "Муваффақият"); });
+        document.getElementById('edit-room-panel').style.display = 'block';
+        document.getElementById('menu-' + roomId).style.display = 'none';
     }
+
+    function closeRoomEditPanel() {
+        document.getElementById('edit-room-panel').style.display = 'none';
+    }
+
+    function saveRoomChangesToServer() {
+        let roomId = document.getElementById('edit-room-id').value;
+        let newName = document.getElementById('edit-room-name').value.trim();
+        let newPass = document.getElementById('edit-room-pass').value.trim();
+        let fileInput = document.getElementById('edit-room-icon');
+
+        if(!newName) { showCustomAlert("Номи комната наметавонад холӣ бошад!", "Хатогӣ"); return; }
+
+        let room = roomsData.find(r => r.id === roomId);
+        if(!room) return;
+
+        let updateData = {
+            name: newName,
+            pass: newPass
+        };
+
+        let sendUpdate = () => {
+            database.ref('rooms/' + roomId).update(updateData).then(() => {
+                closeRoomEditPanel();
+                showCustomAlert("Маълумоти комната бомуваффақият нав карда шуд!", "Муваффақият");
+            });
+        };
+
+        if(fileInput.files && fileInput.files[0]) {
+            compressImage(fileInput.files[0], function(compressedUrl) {
+                updateData.img = compressedUrl;
+                sendUpdate();
+            });
+        } else {
+            sendUpdate();
+        }
+    }
+    /* ====== ОХИРИ ФУНКСИЯҲОИ ТАҲРИРИ КОМНАТА ====== */
 
     async function clearRoomChat(roomId) {
         let confirmResult = await showCustomConfirm("Оё мехоҳед ҳамаи паёмҳои ин чат ба таври ҳамешагӣ пок шаванд?", "Поксозии Чат");
