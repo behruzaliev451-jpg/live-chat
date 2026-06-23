@@ -197,6 +197,21 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 <script>
@@ -692,7 +707,7 @@
             text: text,
             img: userData.img || defaultAvatar,
             timestamp: firebase.database.ServerValue.TIMESTAMP,
-            read: false // Паёми нав дар аввал хонданашуда аст
+            read: false 
         };
 
         database.ref('messages/' + currentChatRoomId).push(msgData).then(() => {
@@ -701,21 +716,28 @@
         });
     }
 
+    // НАВОХТАНИ САДО ҲАНГОМИ ОМАДАНИ ПАЁМИ НАВ ТАЪМИР ШУД
+    let isFirstLoad = true; // Барои он ки ҳангоми аввалин бор кушодани чат ҳамаи паёмҳои кӯҳна садо надиҳанд
     function loadChatMessages(roomId) {
+        isFirstLoad = true;
         database.ref('messages/' + roomId).on('value', (snapshot) => {
             if(currentChatRoomId !== roomId) return;
             
             let messages = snapshot.val();
             let listHTML = "";
             let lastDate = "";
+            let triggerSound = false;
 
             if(messages) {
                 Object.keys(messages).forEach(msgId => {
                     let msg = messages[msgId];
                     
-                    // Агар паём аз дигар кас бошад ва чат кушода бошад, онро хондашуда мекунем
                     if(msg.phone !== userData.phone && !msg.read) {
                         database.ref(`messages/${roomId}/${msgId}`).update({ read: true });
+                        // Агар ин боркунии аввалин набошад, пас паёми ҳақиқатан нав омадааст
+                        if(!isFirstLoad) {
+                            triggerSound = true;
+                        }
                     }
 
                     let msgDate = new Date(msg.timestamp).toLocaleDateString('tg-TJ', { day: 'numeric', month: 'long' });
@@ -727,13 +749,12 @@
                     let isMe = msg.phone === userData.phone ? "me" : "other";
                     let timeStr = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     
-                    // Мантиқи сохтани галочкаҳо барои паёмҳои фиристодаи ман
                     let statusTicks = "";
                     if(msg.phone === userData.phone) {
                         if(msg.read) {
-                            statusTicks = `<span class="msg-status read">✓✓</span>`; // Кабуд - Хонда шуд
+                            statusTicks = `<span class="msg-status read">✓✓</span>`; 
                         } else {
-                            statusTicks = `<span class="msg-status unread">✓</span>`; // Сафед - Фиристода шуд
+                            statusTicks = `<span class="msg-status unread">✓</span>`; 
                         }
                     }
 
@@ -757,6 +778,13 @@
             let box = document.getElementById('chat-messages-list');
             box.innerHTML = listHTML;
             box.scrollTop = box.scrollHeight;
+            
+            // Навохтани садо агар паёми нав аз каси дигар омада бошад
+            if(triggerSound) {
+                msgSound.currentTime = 0;
+                msgSound.play().catch(err => console.log("Браузер автоматики навохтани садоро манъ кард:", err));
+            }
+            isFirstLoad = false;
         });
     }
 
@@ -765,6 +793,7 @@
             let allChats = snapshot.val();
             let globalUnreadCount = 0;
             activeChats = [];
+            let hasNewUnread = false;
 
             if(allChats) {
                 Object.keys(allChats).forEach(roomId => {
@@ -779,6 +808,10 @@
                         let msg = messages[msgId];
                         if(msg.phone !== userData.phone && !msg.read) {
                             unreadCount++;
+                            // Агар корбар дар ин чат набошад, барои паёмҳои беруна ҳам садо дода шавад
+                            if(currentChatRoomId !== roomId) {
+                                hasNewUnread = true;
+                            }
                         }
                         lastMessage = msg;
                     });
