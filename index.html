@@ -195,6 +195,8 @@
     </div>
 </div>
 
+
+
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 <script>
@@ -528,7 +530,6 @@
         });
     }
 
-    // ИН ҶО ФУНКСИЯҲОИ КАМБУДШУДА ВА ҶУСТУҶӮ ПУРРА АЗ НАВ ТАЪМИР ВА СОХТА ШУДАНД
     function searchFunction() {
         let input = document.getElementById('search-input').value.trim().toLowerCase();
         let userResultBox = document.getElementById('search-user-result');
@@ -564,7 +565,7 @@
                 if(!card) return;
                 
                 if((room.isSecret && room.creatorPhone !== userData.phone) || !room.name.toLowerCase().includes(input)) {
-                    card.style.style.display = "none";
+                    card.style.display = "none";
                 } else {
                     card.style.display = "block";
                 }
@@ -679,7 +680,6 @@
         document.getElementById('chat-messages-list').innerHTML = "";
     }
 
-    // ФУНКСИЯИ ФИРИСТОДАНИ ПАЁМ БО СТАТУСИ ХОНДА НАШУДА БАРОИ ГАЛОЧКАҲО
     function sendMessage() {
         let input = document.getElementById('message-input');
         if(!input) return;
@@ -701,7 +701,6 @@
         });
     }
 
-    // ФУНКСИЯИ НАМОИШИ ПАЁМҲО КИ ГАЛОЧКАҲОРО БА СУРАТИ АВТОМАТӢ НИШОН МЕДИҲАД
     function loadChatMessages(roomId) {
         database.ref('messages/' + roomId).on('value', (snapshot) => {
             if(currentChatRoomId !== roomId) return;
@@ -714,7 +713,7 @@
                 Object.keys(messages).forEach(msgId => {
                     let msg = messages[msgId];
                     
-                    // Агар паём аз дигар кас бошад ва чат кушода бошад, онро хондашуда (read: true) мекунем
+                    // Агар паём аз дигар кас бошад ва чат кушода бошад, онро хондашуда мекунем
                     if(msg.phone !== userData.phone && !msg.read) {
                         database.ref(`messages/${roomId}/${msgId}`).update({ read: true });
                     }
@@ -843,5 +842,17 @@
         });
     }
 </script>
+
+
+
+
+
+
+
+
+
+
+
+
 </body>
 </html>
