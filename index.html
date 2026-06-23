@@ -697,49 +697,49 @@
         });
     }
 
-    function renderActiveChats() {
-        let activeListHTML = "";
-        let visibleChatsCount = 0; // Ҳисобкунаки чатҳои воқеан фаъол
+function renderActiveChats() {
+    let activeListHTML = "";
+    let visibleChatsCount = 0; // Ҳисобкунаки чатҳои воқеан фаъол
 
-        activeChats.forEach(chat => {
-            // 1. Вақти охирини баромадани корбар аз ин комнатаро мегирем
-            let lastView = localStorage.getItem('last_view_' + chat.roomId) || 0;
-            
-            // 2. Вақти паёми охиринро аз маслиҳати чат мегирем (агар набошад, 0)
-            let lastMsgTime = chat.lastMessageTimestamp || 0; 
+    activeChats.forEach(chat => {
+        // 1. Вақти охирини баромадани корбар аз ин комнатаро мегирем
+        let lastView = localStorage.getItem('last_view_' + chat.roomId) || 0;
+        
+        // 2. Вақти паёми охиринро аз маслиҳати чат мегирем (агар набошад, 0)
+        let lastMsgTime = chat.lastMessageTimestamp || 0; 
 
-            // 3. ШАРТ: Агар корбар паёмро дида бошад (яъне вақти баромаданаш аз вақти паём навтар бошад)
-            // ва ягон паёми хонданашуда (`unreadCount`) намонда бошад, ин чатро ПАРТОФТ мекунем (нишон намедиҳем)
-            if (lastView >= lastMsgTime && chat.unreadCount <= 0) {
-                return; // Ин чатро гузашта, ба чати навбатӣ меравем
-            }
-
-            // Агар аз шарт гузарад, пас чат фаъол аст ва онро нишон медиҳем
-            visibleChatsCount++;
-
-            let badgeHTML = chat.unreadCount > 0 ? `<span class="badge" style="background:#ff3b30; color:white; padding:2px 7px; border-radius:10px; font-size:12px; font-weight:bold; margin-left:auto;">${chat.unreadCount}</span>` : "";
-
-            activeListHTML += `
-                <div class="item-card" onclick="tryEnterRoom('${chat.roomId}')" style="display: flex; align-items: center; justify-content: space-between;">
-                    <div class="card-main-info" style="display: flex; align-items: center; flex: 1; overflow: hidden;">
-                        <img src="${chat.roomImg || defaultAvatar}" class="room-avatar">
-                        <div class="card-info" style="flex:1; margin-left:10px; overflow:hidden;">
-                            <b>🏢 ${chat.roomName}</b>
-                            <span style="font-size:13px; color:#4a5568; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;">
-                                <b>${chat.lastMessageUser ? chat.lastMessageUser + ':' : ''}</b> ${chat.lastMessageText}
-                            </span>
-                        </div>
-                    </div>
-                    ${badgeHTML}
-                </div>`;
-        });
-
-        const activeChatsList = document.getElementById('active-chats-list');
-        if (activeChatsList) {
-            // Агар ягон чати фаъол намонда бошад, навиштаҷоти "Чатҳо мавҷуд нестанд"-ро нишон медиҳем
-            activeChatsList.innerHTML = (visibleChatsCount > 0) ? activeListHTML : "<p style='color:gray; font-size:14px; text-align:center; margin-top:20px;'>Чатҳои фаъол мавҷуд нестанд.</p>";
+        // 3. ШАРТ: Агар корбар паёмро дида бошад (яъне вақти баромаданаш аз вақти паём навтар бошад)
+        // ва ягон паёми хонданашуда (`unreadCount`) намонда бошад, ин чатро ПАРТОФТ мекунем (нишон намедиҳем)
+        if (lastView >= lastMsgTime && chat.unreadCount <= 0) {
+            return; // Ин чатро гузашта, ба чати навбатӣ меравем
         }
+
+        // Агар аз шарт гузарад, пас чат фаъол аст ва онро нишон медиҳем
+        visibleChatsCount++;
+
+        let badgeHTML = chat.unreadCount > 0 ? `<span class="badge" style="background:#ff3b30; color:white; padding:2px 7px; border-radius:10px; font-size:12px; font-weight:bold; margin-left:auto;">${chat.unreadCount}</span>` : "";
+
+        activeListHTML += `
+            <div class="item-card" onclick="tryEnterRoom('${chat.roomId}')" style="display: flex; align-items: center; justify-content: space-between;">
+                <div class="card-main-info" style="display: flex; align-items: center; flex: 1; overflow: hidden;">
+                    <img src="${chat.roomImg || defaultAvatar}" class="room-avatar">
+                    <div class="card-info" style="flex:1; margin-left:10px; overflow:hidden;">
+                        <b>🏢 ${chat.roomName}</b>
+                        <span style="font-size:13px; color:#4a5568; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;">
+                            <b>${chat.lastMessageUser ? chat.lastMessageUser + ':' : ''}</b> ${chat.lastMessageText}
+                        </span>
+                    </div>
+                </div>
+                ${badgeHTML}
+            </div>`;
+    });
+
+    const activeChatsList = document.getElementById('active-chats-list');
+    if (activeChatsList) {
+        // Агар ягон чати фаъол намонда бошад, навиштаҷоти "Чатҳо мавҷуд нестанд"-ро нишон медиҳем
+        activeChatsList.innerHTML = (visibleChatsCount > 0) ? activeListHTML : "<p style='color:gray; font-size:14px; text-align:center; margin-top:20px;'>Чатҳои фаъол мавҷуд нестанд.</p>";
     }
+}
 
     function openChat(name, img, roomId) {
         currentChatRoomId = roomId;
@@ -798,17 +798,6 @@
                         database.ref(`messages/${roomId}/${m.id}/seenBy/${userData.phone}`).set(true);
                     }
 
-                    // Логикаи галочкаҳо (Статуси хонда шудан)
-                    let ticks = "";
-                    if (isMe) {
-                        // Агар зиёда аз 1 нафар паёмро дида бошад (худи соҳиби паём + каси дигар)
-                        if (m.seenBy && Object.keys(m.seenBy).length > 1) {
-                            ticks = `<span style="color: #34d399; margin-left: 5px; font-size: 11px;">✓✓</span>`; // Хонда шуд (ранги сабз)
-                        } else {
-                            ticks = `<span style="color: #9ca3af; margin-left: 5px; font-size: 11px;">✓</span>`; // Фиристода шуд
-                        }
-                    }
-
                     messagesHTML += `
                         <div class="msg-wrapper ${wrapperClass}">
                             <img src="${m.userImg || defaultAvatar}" class="msg-avatar">
@@ -816,9 +805,8 @@
                                 <span class="msg-username">${m.username}</span>
                                 <div class="msg-bubble">
                                     <div class="msg-text">${m.text}</div>
-                                    <div class="msg-footer" style="display: flex; align-items: center; justify-content: flex-end;">
+                                    <div class="msg-footer">
                                         <span>${formatTime(m.timestamp)}</span>
-                                        ${ticks}
                                     </div>
                                 </div>
                             </div>
@@ -904,7 +892,7 @@
     }
 
     function deleteRoom(roomId) {
-        if(confirm("Оё мехоҳед ин комнатаро нест кунед? Ҳамаи паёмҳо نیز нест мешаванд.")) {
+        if(confirm("Оё мехоҳед ин комнатаро нест кунед? Ҳамаи паёмҳо низ нест мешаванд.")) {
             database.ref('rooms/' + roomId).remove();
             database.ref('messages/' + roomId).remove();
         }
@@ -922,12 +910,18 @@
             prompt("Истинодро нусхабардорӣ кунед:", roomLink);
         });
     }
-
-    function exitAndClearActiveChat() {
-        if (currentChatRoomId) {
-            // Корҳои баъди баромадан (агар лозим бошад)
-        }
+	function exitAndClearActiveChat() {
+    if (currentChatRoomId) {
+        // Барнома вақти ҳамин сонияро дар хотираи телефон сабт мекунад
+        localStorage.setItem('last_view_' + currentChatRoomId, Date.now());
     }
+    // Равзанаи чатро мепӯшад
+    document.getElementById('chat-window').style.display = 'none';
+    currentChatRoomId = "";
+    
+    // Рӯйхати чатҳои фаъолро аз нав нав мекунад, то ин комната гум шавад
+    renderActiveChats(); 
+}
 </script>
 
 
