@@ -142,7 +142,35 @@
         .user-profile-box { background: linear-gradient(135deg, #f6f8fb, #eef2f7); padding: 15px; border-radius: 14px; margin-bottom: 15px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 15px; }
         .searched-user-box { display: flex; align-items: center; gap: 12px; background: #e0e7ff; padding: 12px; border-radius: 12px; margin-bottom: 12px; cursor: pointer; }
         hr { border: 0; height: 1px; background: #e2e8f0; margin: 20px 0; }
-		
+
+        /* ====== СТИЛҲОИ НАВИ СМАРТ-ТОСТ ====== */
+        .toast-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); display: none; justify-content: center;
+            align-items: center; z-index: 9999; padding: 20px;
+            backdrop-filter: blur(3px);
+        }
+        .toast-box {
+            background: white; width: 100%; max-width: 340px;
+            border-radius: 20px; padding: 22px; text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            animation: toastPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes toastPop { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .toast-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; color: #1e293b; }
+        .toast-msg { font-size: 15px; color: #475569; line-height: 22px; margin-bottom: 20px; word-break: break-word; }
+        .toast-buttons { display: flex; gap: 10px; justify-content: center; }
+        .toast-btn {
+            flex: 1; padding: 11px; border-radius: 12px; border: none;
+            font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s;
+        }
+        .toast-btn-ok { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .toast-btn-cancel { background: #f1f5f9; color: #64748b; }
+        .toast-input {
+            width: 100%; padding: 11px 14px; border: 1px solid #e2e8f0;
+            border-radius: 12px; font-size: 15px; margin-bottom: 15px; outline: none;
+        }
+        .toast-input:focus { border-color: #667eea; }
     </style>
 </head>
 <body>
@@ -242,6 +270,16 @@
     </div>
 </div>
 
+<!-- ХУДДИ СМАРТ-ТОСТ HTML ЭЛЕМЕНТ -->
+<div id="smart-toast-overlay" class="toast-overlay">
+    <div class="toast-box">
+        <div id="toast-title" class="toast-title">Огоҳинома</div>
+        <div id="toast-msg" class="toast-msg">Матни паём дар ин ҷо пайдо мешавад.</div>
+        <div id="toast-input-container"></div>
+        <div class="toast-buttons" id="toast-buttons-container"></div>
+    </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
@@ -276,6 +314,76 @@
     const defaultAvatar = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
      
     let userData = { name: "", phone: "", password: "", img: defaultAvatar };
+
+    // ====== СИСТЕМАИ ФУНКСИЯҲОИ СМАРТ-ТОСТ (ҶОЙНИШИНИ ALERT/CONFIRM/PROMPT) ======
+    function showSmartAlert(message, callback) {
+        const overlay = document.getElementById('smart-toast-overlay');
+        document.getElementById('toast-title').innerText = "🔔 Огоҳинома";
+        document.getElementById('toast-msg').innerText = message;
+        document.getElementById('toast-input-container').innerHTML = "";
+        
+        const btnZone = document.getElementById('toast-buttons-container');
+        btnZone.innerHTML = `<button class="toast-btn toast-btn-ok" id="toast-ok-btn">OK</button>`;
+        
+        overlay.style.display = 'flex';
+        document.getElementById('toast-ok-btn').onclick = function() {
+            overlay.style.display = 'none';
+            if(callback) callback();
+        };
+    }
+
+    function showSmartConfirm(message, callback) {
+        const overlay = document.getElementById('smart-toast-overlay');
+        document.getElementById('toast-title').innerText = "❓ Тасдиқ кунед";
+        document.getElementById('toast-msg').innerText = message;
+        document.getElementById('toast-input-container').innerHTML = "";
+        
+        const btnZone = document.getElementById('toast-buttons-container');
+        btnZone.innerHTML = `
+            <button class="toast-btn toast-btn-cancel" id="toast-cancel-btn">Не</button>
+            <button class="toast-btn toast-btn-ok" id="toast-ok-btn">Ҳа</button>
+        `;
+        
+        overlay.style.display = 'flex';
+        document.getElementById('toast-ok-btn').onclick = function() {
+            overlay.style.display = 'none';
+            if(callback) callback(true);
+        };
+        document.getElementById('toast-cancel-btn').onclick = function() {
+            overlay.style.display = 'none';
+            if(callback) callback(false);
+        };
+    }
+
+    function showSmartPrompt(message, defaultValue, callback) {
+        const overlay = document.getElementById('smart-toast-overlay');
+        document.getElementById('toast-title').innerText = "✍️ Воридкунӣ";
+        document.getElementById('toast-msg').innerText = message;
+        
+        const inputZone = document.getElementById('toast-input-container');
+        inputZone.innerHTML = `<input type="text" id="toast-prompt-field" class="toast-input" value="${defaultValue || ''}">`;
+        
+        const btnZone = document.getElementById('toast-buttons-container');
+        btnZone.innerHTML = `
+            <button class="toast-btn toast-btn-cancel" id="toast-cancel-btn">Баргаштан</button>
+            <button class="toast-btn toast-btn-ok" id="toast-ok-btn">Сабт</button>
+        `;
+        
+        overlay.style.display = 'flex';
+        const field = document.getElementById('toast-prompt-field');
+        field.focus();
+        field.select();
+
+        document.getElementById('toast-ok-btn').onclick = function() {
+            let val = field.value;
+            overlay.style.display = 'none';
+            if(callback) callback(val);
+        };
+        document.getElementById('toast-cancel-btn').onclick = function() {
+            overlay.style.display = 'none';
+            if(callback) callback(null);
+        };
+    }
 
     window.onload = function() {
         const msgInput = document.getElementById('message-input');
@@ -343,8 +451,8 @@
         let phone = document.getElementById('userphone').value.trim();
         let pass = document.getElementById('userpass').value.trim();
          
-        if(!name || !phone || !pass) { alert("Лутфан ном, рақам ва рамзи махфиро нависед!"); return; }
-        if(pass.length < 4) { alert("Рамз бояд ҳадди ақал аз 4 аломат иборат бошад!"); return; }
+        if(!name || !phone || !pass) { showSmartAlert("Лутфан ном, рақам ва рамзи махфиро нависед!"); return; }
+        if(pass.length < 4) { showSmartAlert("Рамз бояд ҳадди ақал аз 4 аломат иборат бошад!"); return; }
 
         database.ref('users/' + phone).once('value', (snapshot) => {
             let serverUser = snapshot.val();
@@ -354,7 +462,7 @@
                     localStorage.setItem('chat_user_data', JSON.stringify(userData));
                     enterApp();
                 } else {
-                    alert("Ин рақами телефон аллакай сабт шудааст ва рамзи воридкардаи шумо нодуруст аст!");
+                    showSmartAlert("Ин рақами телефон аллакай сабт шудааст ва рамзи воридкардаи шумо нодуруст аст!");
                 }
             } else {
                 userData = { name: name, phone: phone, password: pass, img: defaultAvatar };
@@ -376,14 +484,16 @@
     }
 
     function logout() {
-        if(confirm("Оё мехоҳед аз барнома бароед?")) {
-            localStorage.removeItem('chat_user_data');
-            document.getElementById('username').value = "";
-            document.getElementById('userphone').value = "";
-            document.getElementById('userpass').value = "";
-            document.getElementById('auth-screen').style.display = 'flex';
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
-        }
+        showSmartConfirm("Оё мехоҳед аз барнома бароед?", function(yes) {
+            if(yes) {
+                localStorage.removeItem('chat_user_data');
+                document.getElementById('username').value = "";
+                document.getElementById('userphone').value = "";
+                document.getElementById('userpass').value = "";
+                document.getElementById('auth-screen').style.display = 'flex';
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+            }
+        });
     }
 
     function updateProfileUI() {
@@ -405,8 +515,8 @@
         let newPass = document.getElementById('edit-pass').value.trim();
         let fileInput = document.getElementById('edit-avatar-file');
 
-        if(!newName || !newPass) { alert("Лутфан ном ва рамзро холӣ нагузоред!"); return; }
-        if(newPass.length < 4) { alert("Рамзи нав бояд ҳадди ақал аз 4 аломат иборат бошад!"); return; }
+        if(!newName || !newPass) { showSmartAlert("Лутфан ном ва рамзро холӣ нагузоред!"); return; }
+        if(newPass.length < 4) { showSmartAlert("Рамзи нав бояд ҳадди ақал аз 4 аломат иборат бошад!"); return; }
 
         userData.name = newName;
         userData.password = newPass;
@@ -416,7 +526,7 @@
             database.ref('users/' + userData.phone).set(userData).then(() => {
                 updateProfileUI();
                 toggleProfileForm(false);
-                alert("Маълумоти профил ва рамзи шумо бомуваффақият нав шуданд!");
+                showSmartAlert("Маълумоти профил ва рамзи шумо бомуваффақият нав шуданд!");
             });
         }
 
@@ -503,7 +613,7 @@
                             <span class="lock-icon">${lockIcon}</span>
                         </div>
                         
-                        <button class="manage-btn" onclick="toggleManageMenu('${room.id}')">⚙️ Идоракунӣ</button>
+                        <button class="manage-btn" onclick="toggleManageMenu('${room.id}')">⚙️ Ипоракунӣ</button>
                         
                         <div class="manage-menu" id="menu-${room.id}">
                             <button class="menu-item" onclick="tryEnterRoom('${room.id}')">🚪 Ворид шудан</button>
@@ -538,35 +648,40 @@
     function editRoomInfo(roomId) {
         let room = roomsData.find(r => r.id === roomId);
         if(!room) return;
-        let newName = prompt("Номи нави комнатаро ворид кунед:", room.name);
-        if(newName === null) return;
-        newName = newName.trim();
-        if(!newName) { alert("Ном наметавонад холӣ бошад!"); return; }
+        
+        showSmartPrompt("Номи нави комнатаро ворид кунед:", room.name, function(newName) {
+            if(newName === null) return;
+            newName = newName.trim();
+            if(!newName) { showSmartAlert("Ном наметавонад холӣ бошад!"); return; }
 
-        let newPass = prompt("Рамзи нави комнатаро ворид кунед (агар нахоҳед, холӣ гузоред):", room.pass || "");
-        if(newPass === null) return;
+            showSmartPrompt("Рамзи нави комнатаро ворид кунед (агар нахоҳед, холӣ гузоред):", room.pass || "", function(newPass) {
+                if(newPass === null) return;
 
-        database.ref('rooms/' + roomId).update({
-            name: newName,
-            pass: newPass.trim()
-        }).then(() => { alert("Маълумоти комната таҳрир шуд!"); });
+                database.ref('rooms/' + roomId).update({
+                    name: newName,
+                    pass: newPass.trim()
+                }).then(() => { showSmartAlert("Маълумоти комната таҳрир шуд!"); });
+            });
+        });
     }
 
     function clearRoomChat(roomId) {
-        if(confirm("Оё мехоҳед ҳамаи паёмҳои ин чат ба таври ҳамешагӣ пок шаванд?")) {
-            database.ref('messages/' + roomId).remove().then(() => { alert("Чат пок карда шуд!"); });
-        }
+        showSmartConfirm("Оё мехоҳед ҳамаи паёмҳои ин чат ба таври ҳамешагӣ пок шаванд?", function(yes) {
+            if(yes) {
+                database.ref('messages/' + roomId).remove().then(() => { showSmartAlert("Чат пок карда шуд!"); });
+            }
+        });
     }
 
     function toggleRoomSecret(roomId, currentStatus) {
         database.ref('rooms/' + roomId).update({ isSecret: !currentStatus }).then(() => {
-            alert(!currentStatus ? "Комната ҳолати Невидимка гирифт! Он дигар дар Главни ва кофтуков намебарояд." : "Комната барои ҳама намоён шуд!");
+            showSmartAlert(!currentStatus ? "Комната ҳолати Невидимка гирифт! Он дигар дар Главни ва кофтуков намебарояд." : "Комната барои ҳама намоён шуд!");
         });
     }
 
     function toggleAdminWriteOnly(roomId, currentStatus) {
         database.ref('rooms/' + roomId).update({ onlyAdminCanWrite: !currentStatus }).then(() => {
-            alert(!currentStatus ? "Ҳолати 'Танҳо админ нависад' фаъол шуд!" : "Ҳолати навиштани паём барои ҳама кушода шуд!");
+            showSmartAlert(!currentStatus ? "Ҳолати 'Танҳо админ нависад' фаъол шуд!" : "Ҳолати навиштани паём барои ҳама кушода шуд!");
         });
     }
 
@@ -633,9 +748,10 @@
         let room = roomsData.find(r => r.id === roomId);
         if(room) {
             if(room.pass) {
-                let userPass = prompt(`Ин комната қулф аст 🔒. Рамзро ворид кунед:`);
-                if(userPass === room.pass) { openChat(room.name, room.img, room.id); } 
-                else if(userPass !== null) { alert("Рамз нодуруст аст!"); }
+                showSmartPrompt(`Ин комната қулф аст 🔒. Рамзро ворид кунед:`, "", function(userPass) {
+                    if(userPass === room.pass) { openChat(room.name, room.img, room.id); } 
+                    else if(userPass !== null) { showSmartAlert("Рамз нодуруст аст!"); }
+                });
             } else { openChat(room.name, room.img, room.id); }
         }
     }
@@ -661,40 +777,27 @@
         return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
     }
 
-    /* ====== ТОБЕЪИ ГАЛОЧКАҲО ====== 
-       Мантиқ:
-       - Танҳо паёмҳои худи корбар (isMe = true) галочка доранд
-       - ✓  (як галочка, сафед)  = фиристода шуд (sent)
-       - ✓✓ (ду галочка, сафед) = расид (delivered) — seenBy дорад вале на аз ҳамаи корбарон
-       - ✓✓ (ду галочка, кабуд)  = хонда шуд (read) — ҳеҷ кас ғайр аз фиристанда нест
-    */
     function buildTicksHTML(msg) {
         let seenBy = msg.seenBy || {};
         let seenCount = Object.keys(seenBy).length;
-
-        // Агар ягон кас (ғайр аз фиристанда) хонда бошад — кабуд
         let othersRead = Object.keys(seenBy).some(phone => phone !== msg.phone);
 
         if (othersRead) {
-            // ✓✓ кабуд — хонда шуд
             return `<span class="msg-ticks ticks-read tick-double">
                         <span class="tick"></span>
                         <span class="tick"></span>
                     </span>`;
         } else if (seenCount >= 1) {
-            // ✓✓ сафед/хокистарӣ — расид (фиристода шуд ва дар сервер аст)
             return `<span class="msg-ticks ticks-delivered tick-double">
                         <span class="tick"></span>
                         <span class="tick"></span>
                     </span>`;
         } else {
-            // ✓ як галочка — фиристода шуд
             return `<span class="msg-ticks ticks-sent">
                         <span class="tick"></span>
                     </span>`;
         }
     }
-    /* ====== ОХИРИ ТОБЕЪИ ГАЛОЧКАҲО ====== */
 
     function listenToUnreadMessages() {
         database.ref('messages').on('value', (snapshot) => {
@@ -776,7 +879,6 @@
             }
 
             visibleChatsCount++;
-
             let badgeHTML = chat.unreadCount > 0 ? `<span class="badge" style="background:#ff3b30; color:white; padding:2px 7px; border-radius:10px; font-size:12px; font-weight:bold; margin-left:auto;">${chat.unreadCount}</span>` : "";
 
             activeListHTML += `
@@ -853,12 +955,10 @@
                     let isMe = m.phone === userData.phone;
                     let wrapperClass = isMe ? "me" : "other";
 
-                    // Паёмҳои дигаронро ба хонда шуд қайд мекунем
                     if(!isMe && (!m.seenBy || !m.seenBy[userData.phone])) {
                         database.ref(`messages/${roomId}/${m.id}/seenBy/${userData.phone}`).set(true);
                     }
 
-                    // Галочкаҳо танҳо барои паёмҳои худи корбар нишон дода мешаванд
                     let ticksHTML = isMe ? buildTicksHTML(m) : "";
 
                     messagesHTML += `
@@ -909,7 +1009,6 @@
             timestamp: firebase.database.ServerValue.TIMESTAMP,
             seenBy: {}
         };
-        // Фиристанда ба худаш хонда шуд
         msgData.seenBy[userData.phone] = true;
 
         msgRef.set(msgData).then(() => {
@@ -923,7 +1022,7 @@
         let pass = document.getElementById('room-pass').value.trim();
         let fileInput = document.getElementById('room-icon');
 
-        if(!name) { alert("Лутфан номи комнатаро нависед!"); return; }
+        if(!name) { showSmartAlert("Лутфан номи комнатаро нависед!"); return; }
 
         let roomRef = database.ref('rooms').push();
         let roomData = {
@@ -944,7 +1043,7 @@
                 document.getElementById('room-name').value = "";
                 document.getElementById('room-pass').value = "";
                 document.getElementById('room-icon').value = "";
-                alert("Комната бомуваффақият сохта шуд!");
+                showSmartAlert("Комната бомуваффақият сохта шуд!");
             });
         }
 
@@ -957,18 +1056,20 @@
     }
 
     function deleteRoom(roomId) {
-        if(confirm("Оё мехоҳед ин комнатаро нест кунед? Ҳамаи паёмҳо низ нест мешаванд.")) {
-            database.ref('rooms/' + roomId).remove();
-            database.ref('messages/' + roomId).remove();
-        }
+        showSmartConfirm("Оё мехоҳед ин комнатаро нест кунед? Ҳамаи паёмҳо низ нест мешаванд.", function(yes) {
+            if(yes) {
+                database.ref('rooms/' + roomId).remove();
+                database.ref('messages/' + roomId).remove();
+            }
+        });
     }
 
     function shareRoom(roomId) {
         let roomLink = window.location.origin + window.location.pathname + "?room=" + roomId;
         navigator.clipboard.writeText(roomLink).then(() => {
-            alert("Истиноди комната ба буфер нусхабардорӣ шуд!\n" + roomLink);
+            showSmartAlert("Истиноди комната ба буфер нусхабардорӣ шуд!\n\n" + roomLink);
         }).catch(err => {
-            prompt("Истинодро нусхабардорӣ кунед:", roomLink);
+            showSmartPrompt("Истинодро нусхабардорӣ кунед:", roomLink, function(val) {});
         });
     }
 
@@ -981,5 +1082,6 @@
         renderActiveChats(); 
     }
 </script>
+
 </body>
 </html>
