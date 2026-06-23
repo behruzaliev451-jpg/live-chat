@@ -96,17 +96,6 @@
         .user-profile-box { background: linear-gradient(135deg, #f6f8fb, #eef2f7); padding: 15px; border-radius: 14px; margin-bottom: 15px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 15px; }
         .searched-user-box { display: flex; align-items: center; gap: 12px; background: #e0e7ff; padding: 12px; border-radius: 12px; margin-bottom: 12px; cursor: pointer; }
         hr { border: 0; height: 1px; background: #e2e8f0; margin: 20px 0; }
-		/* Паёми ман, ки ҳанӯз касе надидааст (Ранги сурхчатоб ё хира) */
-.msg-wrapper.me.unread-msg .msg-bubble {
-    background: #ff9800 !important; /* Ранги норанҷӣ ё дигар ранг ба хоҳиши шумо */
-    color: white;
-}
-
-/* Паёми ман, ки аллакай касе онро дид (Ранги асосии чат) */
-.msg-wrapper.me.read-msg .msg-bubble {
-    background: #667eea !important; 
-    color: white;
-}
     </style>
 </head>
 <body>
@@ -691,26 +680,28 @@
     }
 
     // ФУНКСИЯИ ФИРИСТОДАНИ ПАЁМ БО СТАТУСИ ХОНДА НАШУДА БАРОИ ГАЛОЧКАҲО
-function sendMessage() {
-    let input = document.getElementById('message-input');
-    let text = input.value.trim();
-    if(!text || !currentChatRoomId) return;
+    function sendMessage() {
+        let input = document.getElementById('message-input');
+        if(!input) return;
+        let text = input.value.trim();
+        if(!text || !currentChatRoomId) return;
 
-    let msgData = {
-        senderPhone: userData.phone,
-        senderName: userData.name,
-        text: text,
-        timestamp: firebase.database.ServerValue.TIMESTAMP,
-        read: false // Дар аввал паём хонданашуда аст
-    };
+        let msgData = {
+            name: userData.name,
+            phone: userData.phone,
+            text: text,
+            img: userData.img || defaultAvatar,
+            timestamp: firebase.database.ServerValue.TIMESTAMP,
+            read: false // Паёми нав дар аввал хонданашуда аст
+        };
 
-    database.ref('messages/' + currentChatRoomId).push(msgData).then(() => {
-        input.value = "";
-        autoGrow(input);
-    });
-}
+        database.ref('messages/' + currentChatRoomId).push(msgData).then(() => {
+            input.value = "";
+            input.style.height = "40px";
+        });
+    }
 
-// ФУНКСИЯИ НАМОИШИ ПАЁМҲО КИ ГАЛОЧКАҲОРО БА СУРАТИ АВТОМАТӢ НИШОН МЕДИҲАД
+    // ФУНКСИЯИ НАМОИШИ ПАЁМҲО КИ ГАЛОЧКАҲОРО БА СУРАТИ АВТОМАТӢ НИШОН МЕДИҲАД
     function loadChatMessages(roomId) {
         database.ref('messages/' + roomId).on('value', (snapshot) => {
             if(currentChatRoomId !== roomId) return;
@@ -737,9 +728,6 @@ function sendMessage() {
                     let isMe = msg.phone === userData.phone ? "me" : "other";
                     let timeStr = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     
-                    // Класси нав барои танзими ранги паёми хондашуда ва хонданашуда
-                    let readClass = msg.read ? "read-msg" : "unread-msg";
-                    
                     // Мантиқи сохтани галочкаҳо барои паёмҳои фиристодаи ман
                     let statusTicks = "";
                     if(msg.phone === userData.phone) {
@@ -750,9 +738,8 @@ function sendMessage() {
                         }
                     }
 
-                    // Ба msg-wrapper классҳои нав илова шуданд (${readClass})
                     listHTML += `
-                        <div class="msg-wrapper ${isMe} ${readClass}">
+                        <div class="msg-wrapper ${isMe}">
                             <img src="${msg.img || defaultAvatar}" class="msg-avatar">
                             <div class="msg-body">
                                 ${isMe === 'other' ? `<span class="msg-username">${msg.name}</span>` : ''}
@@ -767,14 +754,6 @@ function sendMessage() {
                         </div>`;
                 });
             }
-            
-            let messagesContainer = document.getElementById('chat-messages-list');
-            if(messagesContainer) {
-                messagesContainer.innerHTML = listHTML;
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }
-        });
-    }
 
             let box = document.getElementById('chat-messages-list');
             box.innerHTML = listHTML;
